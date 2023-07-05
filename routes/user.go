@@ -10,7 +10,12 @@ func RouterUser(c *gin.Engine) {
 	api := c.Group("api")
 	api.Use(middleware.MiddlewareGO())
 	c.POST("/new-user", controllers.NewUser)
-	api.GET("/hello", controllers.Hello)
+}
+
+func Post(c *gin.Engine) {
+	api := c.Group("api")
+	api.Use(middleware.MiddlewareGO())
+	api.POST("/post", controllers.Post)
 }
 
 func Login(c *gin.Engine) {

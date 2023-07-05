@@ -12,12 +12,14 @@ import (
 
 func MiddlewareGO() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		err := godotenv.Load("./.env")
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"erro ao carregar variavel de ambiente para middleware": err,
-			})
-			log.Println("erro ao carregar variavel de ambiente para middleware", err)
+		if os.Getenv("env") != "production" {
+			err := godotenv.Load("./.env")
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"erro ao carregar variavel de ambiente para middleware": err,
+				})
+				log.Println("erro ao carregar variavel de ambiente para middleware", err)
+			}
 		}
 
 		secret := os.Getenv("SECRET")
