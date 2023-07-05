@@ -44,4 +44,5 @@ func NewUser(c *gin.Context) {
 
 func Hello(c *gin.Context) {
 	c.JSON(200, "hello")
+	c.JSON(200, "deployment successfull")
 }
