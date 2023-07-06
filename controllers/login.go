@@ -25,16 +25,11 @@ func LoginUser(c *gin.Context) {
 	var credentials models.UserLogin
 	var login = models.User{}
 
-	err = c.ShouldBindJSON(&credentials)
-	if err != nil {
-		log.Println("Error in read body", err)
-		c.JSON(http.StatusBadRequest, gin.H{
-			"Error in read body": err.Error(),
-		})
-		return
-	}
+	credentials.Email = c.PostForm("email")
+	credentials.Senha = c.PostForm("senha")
+	login.Senha = c.PostForm("senha")
 
-	verificator := fmt.Sprintf(`SELECT id_usuario, nome, email, senha, dt_nascimento, bio FROM usuario WHERE email = '%s'`, credentials.Email)
+	verificator := fmt.Sprintf(`SELECT * FROM usuario WHERE email = '%s'`, credentials.Email)
 	query, err := DB.Query(verificator)
 	if err != nil {
 		log.Println("Erro in select database", err)
@@ -45,12 +40,13 @@ func LoginUser(c *gin.Context) {
 	}
 
 	for query.Next() {
-		err := query.Scan(&login.IDUsuario, &login.Nome, &login.Email, &login.Senha, &login.DTNascimento, &login.Bio)
+		err := query.Scan(&login.IDUsuario, &login.Nome, &login.Email, &login.Senha, &login.DTNascimento, &login.Bio, &login.Foto, &login.FotoCapa, &login.Arroba)
 		if err != nil {
 			log.Println("Erro in scan database", err)
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"Erro in scan database": err.Error(),
 			})
+			return
 		}
 	}
 
@@ -65,8 +61,9 @@ func LoginUser(c *gin.Context) {
 
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"Issuer": login.IDUsuario,
-		"Name":   login.Nome,
+		"Nome":   login.Nome,
 		"Bio":    login.Bio,
+		"Arroba": login.Arroba,
 		"exp":    time.Now().Add(time.Hour).Unix(),
 	})
 

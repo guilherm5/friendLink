@@ -9,6 +9,9 @@ type User struct {
 	Senha        string     `json:"senha"`
 	DTNascimento *time.Time `json:"dt_nascimento"`
 	Bio          *string    `json:"bio"`
+	Foto         []byte     `json:"foto"`
+	FotoCapa     []byte     `json:"foto_capa"`
+	Arroba       *string    `json:"arroba"`
 }
 
 type UserLogin struct {

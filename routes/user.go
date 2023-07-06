@@ -7,17 +7,10 @@ import (
 )
 
 func RouterUser(c *gin.Engine) {
+	//Adicionando groups para implementar middleware
 	api := c.Group("api")
 	api.Use(middleware.MiddlewareGO())
+
 	c.POST("/new-user", controllers.NewUser)
-}
-
-func Post(c *gin.Engine) {
-	api := c.Group("api")
-	api.Use(middleware.MiddlewareGO())
-	api.POST("/post", controllers.Post)
-}
-
-func Login(c *gin.Engine) {
-	c.POST("login", controllers.LoginUser)
+	api.PUT("/info-user", controllers.InfoUser) //Depois de criar o user, vamos rederecionar o user para esta pagina, onde vai pedir algumas infos
 }
