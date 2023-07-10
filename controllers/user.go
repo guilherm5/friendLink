@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"net/mail"
+	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
@@ -51,6 +52,7 @@ func NewUser(c *gin.Context) {
 func InfoUser(c *gin.Context) {
 	//Configurando aws para receber imagem
 	service := utils.UtilAWS()
+	bucketName := os.Getenv("Bucket")
 
 	//Recuperando usuario pelo JWT
 	IDJwt := c.GetInt("id")
@@ -86,7 +88,7 @@ func InfoUser(c *gin.Context) {
 		uploader := s3manager.NewUploader(service)
 
 		input := &s3manager.UploadInput{
-			Bucket: aws.String("frienlinkfotos"),
+			Bucket: &bucketName,
 			Key:    aws.String("perfil/" + foto.Filename),
 			Body:   src,
 		}
@@ -128,7 +130,7 @@ func InfoUser(c *gin.Context) {
 		srcCapa.Seek(0, io.SeekStart)
 
 		inputCapa := &s3manager.UploadInput{
-			Bucket: aws.String("frienlinkfotos"),
+			Bucket: &bucketName,
 			Key:    aws.String("perfil/" + fotoCapa.Filename),
 			Body:   srcCapa,
 		}
