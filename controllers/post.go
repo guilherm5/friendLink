@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
@@ -16,6 +17,8 @@ import (
 func Post(c *gin.Context) {
 	//Configurando aws para receber post
 	service := utils.UtilAWS()
+	bucketName := os.Getenv("Bucket")
+
 	//Recuperando usuario pelo JWT
 	IDJwt := c.GetInt("id")
 	legenda := c.PostForm("legenda_post")
@@ -43,11 +46,10 @@ func Post(c *gin.Context) {
 			return
 		}
 		src.Seek(0, io.SeekStart)
-
 		uploader := s3manager.NewUploader(service)
 
 		input := &s3manager.UploadInput{
-			Bucket: aws.String("frienlinkfotos"),
+			Bucket: &bucketName,
 			Key:    aws.String("post/" + file.Filename),
 			Body:   src,
 		}

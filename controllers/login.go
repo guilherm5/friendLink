@@ -50,6 +50,6 @@ func LoginUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"Logged": tokenString,
+		"logged": tokenString,
 	})
 }

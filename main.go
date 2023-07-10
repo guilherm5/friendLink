@@ -17,7 +17,7 @@ func main() {
 	}))
 
 	//Ligando package routes
-	routes.RouterUser(api)
+	routes.RInfoUser(api)
 	routes.Post(api)
 	routes.Login(api)
 
