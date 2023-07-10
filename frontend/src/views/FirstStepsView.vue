@@ -63,7 +63,7 @@ const handleSubmit = async () => {
     }else{
         notificationStore.addNotification({
         type: 'error',
-        body: res.error ?? 'Ocorreu um erro ao atualizar as informações.',
+        body: res.error?.response?.data as string ?? 'Ocorreu um erro ao atualizar as informações.',
         })
     }
     formLoading.value = false
