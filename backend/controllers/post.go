@@ -7,11 +7,13 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"github.com/guilherm5/models"
 	"github.com/guilherm5/utils"
 )
 
@@ -109,5 +111,51 @@ func Post(c *gin.Context) {
 	}
 	c.JSON(200, gin.H{
 		"link_image": linkPost,
+	})
+}
+
+func Pagination(c *gin.Context) {
+	var posts []models.Post
+	var post models.Post
+	var user models.User
+
+	id, err := strconv.Atoi(c.PostForm("id_post"))
+	if err != nil {
+		log.Println("Erro in convert integer", err)
+		c.Status(400)
+		return
+	}
+	limit := c.PostForm("limit_post")
+
+	query := fmt.Sprintf(`SELECT p.id_post, p.legenda_post, p.post_imagem, p.post_texto, u.nome, u.arroba, u.link_perfil FROM post p INNER JOIN usuario u ON u.id_usuario = p.id_usuario_pt WHERE id_post > %v ORDER BY id_post LIMIT %v`, id, limit)
+
+	rows, err := DB.Query(query)
+	if err != nil {
+		log.Println("Error in pagination query", err)
+		c.Status(400)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+
+		err := rows.Scan(&post.IDPost, &post.LegendaPost, &post.PostImagem, &post.PostTexto, &user.Nome, &user.Arroba, &user.LinkPerfil)
+		if err != nil {
+			log.Println("Error in scanning row", err)
+			c.Status(400)
+			return
+		}
+
+		posts = append(posts, post)
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Println("Error in iterating rows", err)
+		c.Status(400)
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"pagination": posts,
 	})
 }

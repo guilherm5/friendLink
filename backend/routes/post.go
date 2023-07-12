@@ -11,4 +11,5 @@ func Post(c *gin.Engine) {
 	api.Use(middleware.MiddlewareGO())
 	//post Post(conteudo no feed)
 	api.POST("/post", controllers.Post)
+	api.GET("/post", controllers.Pagination)
 }
