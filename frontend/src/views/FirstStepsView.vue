@@ -15,7 +15,7 @@ const form = reactive<FirstStepInfoUpdate>({
   foto: null,
   foto_capa: null,
   bio: '',
-  arroba: authStore.auth?.Nome.replace(' ', '') + Date.now().toString().slice(0, 5),
+  arroba: authStore.auth?.Nome.split(' ').join('') + Date.now().toString().slice(0, 5),
 })
 const fotoUrl = ref('')
 const fotoCapaUrl = ref('')
@@ -103,9 +103,9 @@ const handleSubmit = async () => {
             <p class="mt-24 mb-1 text-center text-white font-bold text-lg">{{ authStore.auth?.Nome }}</p>
             <div class="relative">
                 <label for="arroba" class="text-gray-400 absolute top-1/2 -translate-y-1/2 left-2">@</label>
-                <input id="arroba" v-model="form.arroba" type="text" class="bg-neutral-700 text-gray-400 rounded-lg text-sm p-2 pl-6" placeholder="seu_arroba">
+                <input id="arroba" v-model="form.arroba" type="text" class="bg-neutral-700 text-neutral-400 placeholder:text-neutral-400 rounded-lg text-sm p-2 pl-6" placeholder="seu_arroba">
             </div>
-            <textarea class="mt-6 bg-neutral-700 text-gray-400 rounded-lg text-sm p-2 w-full max-w-md no-scrollbar" v-model="form.bio" placeholder="Sobre você..." rows="4" maxlength="200">
+            <textarea class="mt-6 bg-neutral-700 text-neutral-400 placeholder:text-neutral-400 rounded-lg text-sm p-2 w-full max-w-md no-scrollbar" v-model="form.bio" placeholder="Sobre você..." rows="4" maxlength="200">
             </textarea>
         </div>
     </div>

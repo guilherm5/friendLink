@@ -19,7 +19,7 @@ const handleSubmit = async () => {
   formLoading.value = true
   const res = await handleSignin({email: form.email, senha: form.senha}) as LoginResponse
   if (res.status) {
-    authStore.setAuth(res.data.Logged)
+    authStore.setAuth(res.data.logged)
     router.push({ name: 'home' })
   }else{
     notificationStore.addNotification({
@@ -41,10 +41,10 @@ const handleSubmit = async () => {
           <div class="flex flex-col">
               
             <label for="email" class="mt-3 text-white text-left">Email</label>
-            <input v-model="form.email" type="email" id="email" class="bg-neutral-700 text-gray-400 rounded-lg p-2">
+            <input v-model="form.email" type="email" id="email" class="bg-neutral-700 text-neutral-400 placeholder:text-neutral-400 rounded-lg p-2">
             
             <label for="password" class="mt-3 text-white text-left">Senha</label>
-            <input v-model="form.senha" type="password" id="password" class="bg-neutral-700 text-gray-400 rounded-lg p-2">
+            <input v-model="form.senha" type="password" id="password" class="bg-neutral-700 text-neutral-400 placeholder:text-neutral-400 rounded-lg p-2">
 
               <ButtonComponent :loading="formLoading" title="Entrar" class="mt-8">
                   <template #icon>

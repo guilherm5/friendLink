@@ -7,7 +7,7 @@ type DefaultResponse = {
 }
 type LoginResponse = DefaultResponse & {
     data?: {
-        Logged?: string,
+        logged?: string,
     }
 }
 type Auth = {
