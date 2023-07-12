@@ -12,6 +12,7 @@ func RInfoUser(c *gin.Engine) {
 	api.Use(middleware.MiddlewareGO())
 
 	api.PUT("/info-user", controllers.InfoUser) //Depois de criar o user, vamos rederecionar o user para esta pagina, onde vai pedir algumas infos
+	api.GET("/info-user", controllers.GetInfoUser)
 }
 
 func PostUser(c *gin.Engine) {
