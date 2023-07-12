@@ -52,12 +52,14 @@ const handleShowStory = (index: number) => {
         
         <div class="overflow-x-scroll w-full max-w-[700px] snap-x" id="storyContainer">
             <div class="flex w-full gap-4 py-4">
+                <div class="w-8 opacity-0 md:hidden">.</div>
                 <div v-for="(story, index) in stories" @click="handleShowStory(index)" class="max-w-[80px] snap-center cursor-pointer" :key="index">
                     <img 
                         :class="(story ? 'border-neutral-700' : 'border-yellow-400') + ' w-[80px] max-w-[80px] h-[80px] object-cover rounded-3xl p-1 bg-neutral-800 border-2'"
                         src="https://media.tenor.com/ZC0QOFGb9AgAAAAC/robin.gif" />
                     <p :class="(story ? 'text-neutral-400' : 'text-white') + ' mt-2 text-xs font-bold text-center truncate'">rangel_pci</p>
                 </div>
+                <div class="w-8 opacity-0 md:hidden">.</div>
             </div>
         </div>
     </div>
