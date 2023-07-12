@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+// import FeedView from '../views/FeedView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -7,7 +7,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView
+      component: () => import('../views/FeedView.vue')
     },
     {
       path: '/cadastro',
@@ -23,6 +23,26 @@ const router = createRouter({
       path: '/primeiros-passos',
       name: 'first-steps',
       component: () => import('../views/FirstStepsView.vue')
+    },
+    {
+      path: '/inbox',
+      name: 'inbox',
+      component: () => null
+    },
+    {
+      path: '/notificacoes',
+      name: 'notifications',
+      component: () => null
+    },
+    {
+      path: '/configuracoes',
+      name: 'configurations',
+      component: () => null
+    },
+    {
+      path: '/explorar',
+      name: 'search',
+      component: () => null
     },
   ]
 })
