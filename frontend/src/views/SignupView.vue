@@ -21,7 +21,7 @@ const handleSubmit = async () => {
   const res = await handleSignup(form) as DefaultResponse
   if (res.status) {
     const res = await handleSignin({email: form.email, senha: form.senha}) as LoginResponse
-    authStore.setAuth(res.data.Logged)
+    authStore.setAuth(res.data.logged)
     router.push({ name: 'first-steps' })
   }else{
     notificationStore.addNotification({
