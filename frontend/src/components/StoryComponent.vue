@@ -50,7 +50,7 @@ const handleShowStory = (index: number) => {
             <ChevronCircleRight32Filled v-if="showScrollRight" class="mb-4 transition text-neutral-500 hover:text-neutral-300 cursor-pointer" @click="scrollHalf('right')" height="32"/>
         </div>
         
-        <div class="overflow-x-scroll w-full max-w-[700px] snap-x" id="storyContainer">
+        <div class="overflow-x-scroll w-full max-w-[768px] snap-x" id="storyContainer">
             <div class="flex w-full gap-4 py-4">
                 <div class="w-8 opacity-0 md:hidden">.</div>
                 <div v-for="(story, index) in stories" @click="handleShowStory(index)" class="max-w-[80px] snap-center cursor-pointer" :key="index">

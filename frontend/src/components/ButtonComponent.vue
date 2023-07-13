@@ -2,6 +2,7 @@
     defineProps<{
         loading?: Boolean,
         title?: String,
+        iconSide?: 'left' | 'right'
     }>()
 </script>
 
@@ -13,10 +14,13 @@
         </svg>
     </button>
     <button v-else class="bg-yellow-500 hover:bg-yellow-600 active:bg-yellow-700 text-black rounded-lg p-2 px-4 font-medium flex flex-row gap-4 items-center min-h-[40px]">
+        <div v-if="$slots.icon && iconSide === 'left'" :class="!title ? 'mx-auto' : ''">
+            <slot name="icon"></slot>
+        </div>
         <div v-if="title" class="text-center flex-1 font-bold">
             {{ title }}
         </div>
-        <div v-if="$slots.icon" :class="!title ? 'mx-auto' : ''">
+        <div v-if="$slots.icon && iconSide === 'right'" :class="!title ? 'mx-auto' : ''">
             <slot name="icon"></slot>
         </div>
     </button>

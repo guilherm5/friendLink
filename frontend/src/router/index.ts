@@ -44,6 +44,11 @@ const router = createRouter({
       name: 'search',
       component: () => null
     },
+    {
+      path: '/perfil/:arroba',
+      name: 'profile',
+      component: () => null
+    },
   ]
 })
 

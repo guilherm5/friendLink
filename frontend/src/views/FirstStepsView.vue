@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref, type Ref } from 'vue';
 import { useNotificationStore, useAuthStore } from '../stores/global';
-import type { DefaultResponse } from '@/types/AuthService';
+import type { DefaultResponse } from '@/types/ApiService';
 import router from '@/router';
 import ButtonComponent from '@/components/ButtonComponent.vue';
 import { ArrowForward, Brush } from '@vicons/ionicons5';
@@ -12,7 +12,7 @@ const notificationStore = useNotificationStore()
 const authStore = useAuthStore()
 const formLoading = ref(false)
 const form = reactive<FirstStepInfoUpdate>({
-  foto: null,
+  foto_perfil: null,
   foto_capa: null,
   bio: '',
   arroba: authStore.auth?.Nome.split(' ').join('') + Date.now().toString().slice(0, 5),
@@ -25,7 +25,7 @@ const handleImageUpload = (e: Event, type: string) => {
     if(!target.files){return}
     const image = target.files[0];
     if(type === 'foto'){
-        form.foto = image
+        form.foto_perfil = image
         setPreview(image, fotoUrl)
     }else{
         form.foto_capa = image
@@ -49,7 +49,7 @@ const setFotoAndCoverImageFiles = async () => {
     await fetch('/src/assets/user_default_foto.jpeg')
     .then((res) => res.blob())
     .then((blob) => {
-        form.foto = new File([blob], 'user_default_foto.jpeg', { type: 'image/jpeg' })
+        form.foto_perfil = new File([blob], 'user_default_foto.jpeg', { type: 'image/jpeg' })
     })
     .catch((err) => console.error(err))
 }
@@ -57,6 +57,7 @@ const setFotoAndCoverImageFiles = async () => {
 await setFotoAndCoverImageFiles()
 const handleSubmit = async () => {
     formLoading.value = true
+    form.arroba = form.arroba.toLowerCase().split(' ').join('').replace(/[^a-z0-9]/g, '')
     const res = await handleInfoUpdate(authStore.auth?.token, form) as DefaultResponse
     if (res.status) {
         router.push({ name: 'home' })
