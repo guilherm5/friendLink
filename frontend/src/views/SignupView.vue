@@ -2,10 +2,11 @@
 import { reactive, ref } from 'vue';
 import { handleSignup, handleSignin } from '@/services/AuthService';
 import { useNotificationStore, useAuthStore } from '../stores/global';
-import type { LoginResponse, DefaultResponse } from '@/types/AuthService';
+import type { LoginResponse } from '@/types/AuthService';
 import router from '@/router';
 import ButtonComponent from '@/components/ButtonComponent.vue';
 import { EnterOutline } from '@vicons/ionicons5';
+import type { DefaultResponse } from '@/types/ApiService';
 
 const notificationStore = useNotificationStore()
 const authStore = useAuthStore()

@@ -2,6 +2,7 @@ import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import jwt_decode from 'jwt-decode'
 import type { Auth } from '@/types/AuthService'
+import type { PostResponse } from '@/types/Post'
 
 type Notification = {
   id: string,
@@ -66,4 +67,21 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   return { auth, setAuth, removeAuth }
+})
+
+export const usePostStore = defineStore('post', () => {
+  const posts = ref<PostResponse[]>([])
+  const updatePostsFunction = ref<Function | null>(null)
+  const updatePosts = (): void => updatePostsFunction.value ? updatePostsFunction.value() : null
+
+  function addPosts(newPosts: PostResponse[]) {
+    posts.value.push(...newPosts)
+  }
+  function setPosts(newPosts: PostResponse[]) {
+    posts.value = newPosts
+  }
+  function onUpdatePosts(updateFunction: Function) {
+    updatePostsFunction.value = updateFunction
+  }
+  return { posts, addPosts, onUpdatePosts, updatePosts, setPosts }
 })

@@ -6,7 +6,7 @@ const notificationStore = useNotificationStore()
 </script>
 
 <template>
-    <div class="fixed pb-4 top-2 left-2 flex flex-col gap-2 w-full max-w-[350px] max-h-screen overflow-x-hidden overflow-y-auto no-scrollbar z-40" v-auto-animate>
+    <div class="fixed pb-4 top-[48px] md:top-[64px] left-2 flex flex-col gap-2 w-full max-w-[350px] max-h-screen overflow-x-hidden overflow-y-auto no-scrollbar z-[100]" v-auto-animate>
         <div 
             v-for="notification in notificationStore.notifications" 
             :key="notification.id"

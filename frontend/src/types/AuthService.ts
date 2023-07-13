@@ -1,10 +1,5 @@
-import type { AxiosError } from "axios"
+import type { DefaultResponse } from "./ApiService"
 
-type DefaultResponse = {
-    status: boolean, 
-    error?: AxiosError, 
-    data?: any,
-}
 type LoginResponse = DefaultResponse & {
     data?: {
         logged?: string,
@@ -16,7 +11,6 @@ type Auth = {
     Nome: string,
 }
 export type {
-    DefaultResponse,
     LoginResponse,
     Auth
 }
