@@ -14,12 +14,14 @@ func Init() *sql.DB {
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Println("Erro ao carregar variavel de ambiente para logar no banco de dados", err)
-
 	}
 	host := os.Getenv("HOST")
 	database := os.Getenv("DATABASE")
 	user := os.Getenv("USER")
 	password := os.Getenv("PASSWORD")
+	if host == "" || database == "" || user == "" || password == "" {
+		log.Println("Variaveis de ambiente do banco de dados nao pode ser null")
+	}
 
 	connection := fmt.Sprintf(`%s:%s@tcp(%s)/%s`, user, password, host, database)
 

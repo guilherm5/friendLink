@@ -6,12 +6,12 @@ import (
 	"github.com/guilherm5/middleware"
 )
 
-func RInfoUser(c *gin.Engine) {
+func LInfoUser(c *gin.Engine) {
 	//Adicionando groups para implementar middleware
 	api := c.Group("api")
 	api.Use(middleware.MiddlewareGO())
 
-	api.PUT("/info-user", controllers.InfoUser) //Depois de criar o user, vamos rederecionar o user para esta pagina, onde vai pedir algumas infos
+	api.PUT("/info-user", controllers.AfterCad) //Depois de criar o user, vamos rederecionar o user para esta pagina, onde vai pedir algumas infos
 	api.GET("/info-user", controllers.GetInfoUser)
 }
 
