@@ -12,19 +12,14 @@ import (
 var s3Session = session.New()
 
 func UtilAWS() *session.Session {
-
+	//Variaveis de login para o aws
 	region := os.Getenv("REGION")
-	if region == "" {
-		log.Println("region vazia")
-	}
 	key := os.Getenv("KEY")
-	if key == "" {
-		log.Println("key vazia")
-	}
 	secretpass := os.Getenv("SECRETPASS")
-	if secretpass == "" {
-		log.Println("secretpass vazia")
+	if region == "" || key == "" || secretpass == "" {
+		log.Println("Variavel de ambiente não pode ser null")
 	}
+
 	s3Config := &aws.Config{
 		Region:      aws.String(region),
 		Credentials: credentials.NewStaticCredentials(key, secretpass, ""),
@@ -32,5 +27,4 @@ func UtilAWS() *session.Session {
 
 	s3Session = session.New(s3Config)
 	return session.New(s3Config.WithRegion(region))
-
 }

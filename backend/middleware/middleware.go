@@ -16,12 +16,16 @@ func MiddlewareGO() gin.HandlerFunc {
 		if os.Getenv("env") != "production" {
 			err := godotenv.Load("./.env")
 			if err != nil {
-				c.Status(500)
+				log.Println("Erro ao carregar variavel de ambiente para uso do middleware", err)
+				c.Status(400)
 				return
 			}
 		}
 		secret := os.Getenv("SECRET")
-		log.Println(secret)
+		if secret == "" {
+			log.Println("Secret middleware não pode ser null")
+			c.Abort()
+		}
 
 		//setei meu secret em um context gin para não precisar recuperar com a mesma função em todo local..
 		c.Set("secret", secret)
@@ -30,7 +34,6 @@ func MiddlewareGO() gin.HandlerFunc {
 		token, err := jwt.Parse(authHeader, func(t *jwt.Token) (interface{}, error) {
 			return []byte(secret), nil
 		})
-
 		if err != nil || !token.Valid {
 			c.Status(401)
 			log.Println("Token inválido.", err)
@@ -39,7 +42,7 @@ func MiddlewareGO() gin.HandlerFunc {
 		//capturando claims para setar id usuario em um context e resgatar em outros lugares
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
-			c.Status(500)
+			c.Status(400)
 			log.Println("Erro ao obter claims", err)
 			return
 		}
@@ -53,6 +56,5 @@ func MiddlewareGO() gin.HandlerFunc {
 		IDJwt := int(sub)
 		c.Set("id", IDJwt)
 		c.Next()
-
 	}
 }

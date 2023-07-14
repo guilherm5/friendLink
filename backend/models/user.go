@@ -13,9 +13,3 @@ type User struct {
 	LinkCapa     string     `json:"link_capa"`
 	Arroba       *string    `json:"arroba"`
 }
-
-type UserLogin struct {
-	IDUsuario int    `json:"id_usuario"`
-	Email     string `json:"email"`
-	Senha     string `json:"senha"`
-}
