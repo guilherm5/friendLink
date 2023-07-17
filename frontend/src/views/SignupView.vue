@@ -51,7 +51,7 @@ const handleSubmit = async () => {
             <label for="password" class="mt-3 text-white text-left">Senha</label>
             <input v-model="form.senha" type="password" id="password" class="bg-neutral-700 text-gray-400 rounded-lg p-2">
 
-            <ButtonComponent :loading="formLoading" title="Continuar" class="mt-8" iconSide="right">
+            <ButtonComponent :loading="formLoading" title="Continuar" class="mt-8">
               <template #icon>
                 <EnterOutline height="24"/>
               </template>
