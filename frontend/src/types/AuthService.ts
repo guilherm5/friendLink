@@ -9,6 +9,7 @@ type Auth = {
     token: string | undefined,
     exp: number,
     Nome: string,
+    ID: number,
 }
 export type {
     LoginResponse,

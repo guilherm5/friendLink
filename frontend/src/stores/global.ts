@@ -2,7 +2,7 @@ import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import jwt_decode from 'jwt-decode'
 import type { Auth } from '@/types/AuthService'
-import type { PostResponse } from '@/types/Post'
+import type { Post } from '@/types/Post'
 
 type Notification = {
   id: string,
@@ -49,11 +49,12 @@ export const useAuthStore = defineStore('auth', () => {
 
   function setAuth(_token: string | undefined) {
     if(_token) {
-      const decoded = jwt_decode<{exp: number, Nome: string}>(_token)
+      const decoded = jwt_decode<{exp: number, Nome: string, Issuer: number}>(_token)
       auth.value = {
         token: _token,
         exp: decoded.exp,
         Nome: decoded.Nome,
+        ID: decoded.Issuer
       }
     }else{
       auth.value = undefined
@@ -70,18 +71,22 @@ export const useAuthStore = defineStore('auth', () => {
 })
 
 export const usePostStore = defineStore('post', () => {
-  const posts = ref<PostResponse[]>([])
+  const posts = ref<Post[]>([])
   const updatePostsFunction = ref<Function | null>(null)
   const updatePosts = (): void => updatePostsFunction.value ? updatePostsFunction.value() : null
 
-  function addPosts(newPosts: PostResponse[]) {
+  function addPosts(newPosts: Post[]) {
     posts.value.push(...newPosts)
   }
-  function setPosts(newPosts: PostResponse[]) {
+  function setPosts(newPosts: Post[]) {
     posts.value = newPosts
   }
   function onUpdatePosts(updateFunction: Function) {
     updatePostsFunction.value = updateFunction
   }
-  return { posts, addPosts, onUpdatePosts, updatePosts, setPosts }
+  function updatePostValue(post: Post) {
+    const index = posts.value.findIndex(p => p.id_post === post.id_post)
+    posts.value[index] = post
+  }
+  return { posts, addPosts, onUpdatePosts, updatePosts, setPosts, updatePostValue }
 })
