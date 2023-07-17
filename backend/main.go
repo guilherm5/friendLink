@@ -21,5 +21,7 @@ func main() {
 	routes.Post(api)
 	routes.Login(api)
 	routes.PostUser(api)
+	routes.Comentario(api)
+	routes.Curtida(api)
 	api.Run(":8080")
 }

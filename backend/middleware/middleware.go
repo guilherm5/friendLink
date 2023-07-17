@@ -35,9 +35,8 @@ func MiddlewareGO() gin.HandlerFunc {
 			return []byte(secret), nil
 		})
 		if err != nil || !token.Valid {
-			c.Status(401)
 			log.Println("Token inválido.", err)
-			return
+			c.AbortWithStatus(401)
 		}
 		//capturando claims para setar id usuario em um context e resgatar em outros lugares
 		claims, ok := token.Claims.(jwt.MapClaims)

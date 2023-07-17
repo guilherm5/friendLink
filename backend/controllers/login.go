@@ -15,8 +15,8 @@ import (
 func LoginUser(c *gin.Context) {
 	secret := os.Getenv("SECRET")
 	//Variaveis para logar
-	var credentials models.User
-	var login = models.User{}
+	var credentials models.Usuario
+	var login = models.Usuario{}
 
 	//Aceitando creden. login via postform
 	credentials.Email = c.PostForm("email")

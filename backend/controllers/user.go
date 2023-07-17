@@ -7,13 +7,11 @@ import (
 	"log"
 	"net/http"
 	"net/mail"
-	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
-	"github.com/golang-jwt/jwt"
 	"github.com/guilherm5/database"
 	"github.com/guilherm5/models"
 	"github.com/guilherm5/utils"
@@ -64,6 +62,7 @@ func NewUser(c *gin.Context) {
 func AfterCad(c *gin.Context) {
 	//Configurando aws para receber imagem
 	service := utils.UtilAWS()
+	IDUser := utils.GetUserJWT(c) //Funcao para pegar id do usuario
 
 	//Gerando uuid unico para cada foto/capa
 	strFoto, err := uuid.NewV4()
@@ -77,37 +76,6 @@ func AfterCad(c *gin.Context) {
 		log.Println("Erro ao gerar uuid capa", err)
 		c.Status(100)
 	}
-
-	secret := os.Getenv("SECRET")
-	if secret == "" {
-		log.Println("Secret não pode ser null")
-		c.Status(500)
-	}
-
-	tokenString := c.GetHeader("Authorization")
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return []byte(secret), nil
-	})
-	if err != nil || !token.Valid {
-		log.Println("Token JWT inválido ", err)
-		c.Status(401)
-		return
-	}
-
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		c.Status(400)
-		log.Println("Erro ao obter claims do token JWT", ok)
-		return
-	}
-
-	sub, ok := claims["Issuer"].(float64)
-	if !ok {
-		log.Println("Erro ao obter ID do usuario a partir do token JWT", ok)
-		c.Status(500)
-		return
-	}
-	userIDInt := int(sub)
 
 	//Começando update
 	bio := c.PostForm("bio")
@@ -200,7 +168,7 @@ func AfterCad(c *gin.Context) {
 	linkPerfil := fmt.Sprintf("https://frienlinkfotos.s3.amazonaws.com/perfil/%s", strFoto)
 	linkCapa := fmt.Sprintf("https://frienlinkfotos.s3.amazonaws.com/perfil/%s", strCapa)
 
-	_, err = DB.Exec(`UPDATE usuario SET link_perfil = ?, link_capa = ?, bio = ?, arroba = ? WHERE id_usuario = ? `, linkPerfil, linkCapa, bio, arrobaData, userIDInt)
+	_, err = DB.Exec(`UPDATE usuario SET link_perfil = ?, link_capa = ?, bio = ?, arroba = ? WHERE id_usuario = ? `, linkPerfil, linkCapa, bio, arrobaData, IDUser)
 	if err != nil {
 		log.Println("Error ao executar update", err)
 		c.Status(400)
@@ -212,42 +180,14 @@ func AfterCad(c *gin.Context) {
 }
 
 func GetInfoUser(c *gin.Context) {
-	secret := os.Getenv("SECRET")
+	//funcao que retorna id do usuario
+	IDUser := utils.GetUserJWT(c)
+	var getUser models.Usuario
 
-	tokenString := c.GetHeader("Authorization")
-
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return []byte(secret), nil
-	})
-	if err != nil || !token.Valid {
-		c.Status(401)
-		log.Println("Token JWT inválido ", err)
-		return
-	}
-
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		c.Status(400)
-		log.Println("Erro ao obter claims do token JWT")
-		return
-	}
-
-	sub, ok := claims["Issuer"].(float64)
-	if !ok {
-		c.Status(500)
-		log.Println("Erro ao obter ID do usuario a partir do token JWT")
-		return
-	}
-	userIDInt := int(sub)
-
-	var getUser models.User
-
-	query := DB.QueryRow(`SELECT nome, bio, arroba, link_perfil, link_capa FROM usuario WHERE id_usuario = ?`, userIDInt)
-
+	query := DB.QueryRow(`SELECT nome, bio, arroba, link_perfil, link_capa FROM usuario WHERE id_usuario = ?`, IDUser)
 	if err := query.Scan(&getUser.Nome, &getUser.Bio, &getUser.Arroba, &getUser.LinkPerfil, &getUser.LinkCapa); err != nil {
 		log.Println(err)
 	}
 
-	log.Println(getUser)
 	c.JSON(200, getUser)
 }

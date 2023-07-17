@@ -6,52 +6,24 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
-	"github.com/golang-jwt/jwt"
 	"github.com/guilherm5/models"
 	"github.com/guilherm5/utils"
 )
 
 func Post(c *gin.Context) {
 	service := utils.UtilAWS()
+	IDUser := utils.GetUserJWT(c)
 
 	strPost, err := uuid.NewV4()
 	if err != nil {
 		log.Println("Erro ao gerar uuid foto", err)
 	}
-
-	secret := os.Getenv("SECRET")
-	tokenString := c.GetHeader("Authorization")
-
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return []byte(secret), nil
-	})
-	if err != nil || !token.Valid {
-		c.Status(400)
-		log.Println("Token JWT inválido ", err)
-		return
-	}
-
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		c.Status(400)
-		log.Println("Erro ao obter claims do token JWT", ok)
-		return
-	}
-
-	sub, ok := claims["Issuer"].(float64)
-	if !ok {
-		c.Status(400)
-		log.Println("Erro ao obter ID do usuario a partir do token JWT", ok)
-		return
-	}
-	userIDInt := int(sub)
 
 	postTexto := c.PostForm("post_texto")
 
@@ -95,7 +67,7 @@ func Post(c *gin.Context) {
 		}
 		linkPost := fmt.Sprintf("https://frienlinkfotos.s3.amazonaws.com/post/%s", strPost)
 
-		_, err = DB.Exec("INSERT INTO post (post_imagem, post_texto, id_usuario_pt) VALUES (?, ?, ?)", linkPost, postTexto, userIDInt)
+		_, err = DB.Exec("INSERT INTO post (post_imagem, post_texto, id_usuario_pt) VALUES (?, ?, ?)", linkPost, postTexto, IDUser)
 		if err != nil {
 			log.Println("Erro ao executar query", err)
 			c.JSON(400, err)
@@ -123,12 +95,17 @@ func Pagination(c *gin.Context) {
 	if id == 0 {
 		where = "WHERE 1=1"
 	}
-	query := fmt.Sprintf(`SELECT p.id_post, p.post_imagem, p.post_texto, u.nome, u.arroba, u.link_perfil 
-             FROM post p 
-             INNER JOIN usuario u ON u.id_usuario = p.id_usuario_pt 
-             %v
-             ORDER BY id_post DESC 
-             LIMIT %v`, where, limit)
+
+	query := fmt.Sprintf(`SELECT p.id_post, p.post_imagem, p.post_texto, u.nome, u.arroba, u.link_perfil,
+	COUNT(DISTINCT c.id_comentario) AS qtde_comentario, COUNT(DISTINCT cur.id_usuario_ct) AS qtde_curtida
+	FROM post p  
+		INNER JOIN usuario u ON u.id_usuario = p.id_usuario_pt 
+		LEFT JOIN comentario c ON p.id_post = c.id_post_cmt
+		LEFT JOIN curtida cur ON p.id_post = cur.id_post_ct 
+	%v
+	GROUP BY p.id_post 
+	ORDER BY p.id_post DESC 
+	LIMIT %v;`, where, limit)
 
 	rows, err := DB.Query(query)
 	if err != nil {
@@ -138,7 +115,7 @@ func Pagination(c *gin.Context) {
 	}
 
 	for rows.Next() {
-		err := rows.Scan(&post.IDPost, &post.PostImagem, &post.PostTexto, &post.Nome, &post.Arroba, &post.LinkPerfil)
+		err := rows.Scan(&post.IDPost, &post.PostImagem, &post.PostTexto, &post.Nome, &post.Arroba, &post.LinkPerfil, &post.QtdeComentario, &post.QtdeCurtida)
 		if err != nil {
 			log.Println("Erro ao scanear linhas", err)
 			c.Status(400)
