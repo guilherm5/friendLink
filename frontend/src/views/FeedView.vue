@@ -9,7 +9,7 @@ import { useAuthStore } from '@/stores/global';
 import type { DefaultResponse } from '@/types/ApiService';
 import { ref, onMounted } from 'vue';
 import { usePostStore } from '../stores/global';
-import type { PostResponse } from '@/types/Post';
+import type { Post } from '@/types/Post';
 
 const notificationStore = useNotificationStore()
 const postsLoading = ref(false)
@@ -46,7 +46,7 @@ async function fetchNewPosts() {
     postStore.addPosts(newPosts)
   }
 }
-async function fetchPosts(): Promise<false | PostResponse[]>{
+async function fetchPosts(): Promise<false | Post[]>{
   postsLoading.value = true
   const res = await getPosts(authStore.auth?.token, lastPostId.value, postsPerPage.value) as DefaultResponse
   if (res.status) {
