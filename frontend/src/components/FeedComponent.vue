@@ -165,7 +165,8 @@ const timeAgo = (date: string) => {
                     <div v-for="comment in post.comentarios" class="flex gap-2 mb-4" :key="comment.id_comentario">
                         <img :src="comment.link_perfil" alt="Foto de perfil" class="mt-2 w-8 h-8 rounded-full bg-neutral-900 object-cover">
                         <div class="flex flex-col">
-                            <p class="text-white text-sm mb-1">{{ comment.nome }}<span class="text-neutral-400 inline-block text-[12px] font-thin">{{ comment.arroba }}</span>
+                            <p class="text-white text-sm mb-1">{{ comment.nome }}
+                                <span class="text-neutral-400 inline-block text-[12px] font-thin">{{ comment.arroba }}</span>
                                 <span class="text-neutral-400 inline-block text-[12px] font-thin">
                                 <div class="ml-1 mb-[2px] inline-block w-[3px] h-[3px] bg-neutral-400 rounded-full"></div> {{ timeAgo(comment.dt_comentario) }}</span>
                             </p>
