@@ -3,14 +3,8 @@ import { defineStore } from 'pinia'
 import jwt_decode from 'jwt-decode'
 import type { Auth } from '@/types/AuthService'
 import type { Post } from '@/types/PostService'
+import type { AlertNotification, NotificationProps } from '@/types/Notification'
 
-type Notification = {
-  id: string,
-  type: 'success' | 'error',
-  body: string,
-  footer?: string
-}
-type NotificationProps = Omit<Notification, 'id'>
 
 export const useCounterStore = defineStore('counter', () => {
   const count = ref(0)
@@ -23,7 +17,7 @@ export const useCounterStore = defineStore('counter', () => {
 })
 
 export const useNotificationStore = defineStore('notification', () => {
-  const notifications = ref<Notification[]>([])
+  const notifications = ref<AlertNotification[]>([])
   function addNotification(notification: NotificationProps) {
     notifications.value.unshift({ 
       id: Date.now() + Math.random().toString().slice(2),
@@ -40,14 +34,20 @@ export const useAuthStore = defineStore('auth', () => {
   const auth = ref<Auth | undefined>(getAuth())
   
   function getAuth() {
-    const ls = localStorage.getItem('auth')
-    if(ls){
-      return JSON.parse(ls)
+    try{
+      const ls = localStorage.getItem('auth')
+      if(ls){
+        return JSON.parse(ls)
+      }
+      return undefined
+    }catch(e){
+      console.log('Error at get localStorage jwt\n', e)
+      localStorage.removeItem('auth')
+      return undefined
     }
-    return undefined
   }
 
-  function setAuth(_token: string | undefined, _refreshToken: string | undefined = 'refreshToken should not have a default value') {
+  function setAuth(_token: string | undefined, _refreshToken: string | undefined) {
     if(_token && _refreshToken) {
       const decoded = jwt_decode<{exp: number, Nome: string, Issuer: number}>(_token)
       auth.value = {
@@ -65,7 +65,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   function removeAuth() {
     localStorage.removeItem('auth')
-    setAuth(undefined)
+    setAuth(undefined, undefined)
   }
 
   return { auth, setAuth, removeAuth }
@@ -90,4 +90,21 @@ export const usePostStore = defineStore('post', () => {
     posts.value[index] = post
   }
   return { posts, addPosts, onUpdatePosts, updatePosts, setPosts, updatePostValue }
+})
+
+export const useRedirectStore = defineStore('redirect', () => {
+  const redirectTo = ref<string | undefined>()
+  const message = ref<string | undefined>()
+
+  function setRedirectTo(path: string, redirectMessage: string) {
+    redirectTo.value = path
+    message.value = redirectMessage
+  }
+  function clearMessage() {
+    message.value = undefined
+  }
+  function clearRedirectTo() {
+    redirectTo.value = undefined
+  }
+  return { redirectTo, setRedirectTo, message, clearMessage, clearRedirectTo }
 })

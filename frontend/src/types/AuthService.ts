@@ -1,8 +1,9 @@
 import type { DefaultResponse } from "./ApiService"
 
-type LoginResponse = DefaultResponse & {
+type LoginResponse = Omit<DefaultResponse, 'data'> & {
     data?: {
         logged?: string,
+        refresh?: string,
     }
 }
 type Auth = {
