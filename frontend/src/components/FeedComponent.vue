@@ -43,8 +43,12 @@ const like = (post: Post) => {
     }
 }
 const listComments = async (post: Post) => {
-    if(post.carregadoUmaVez){return false}
-    if(post.qtde_comentario === 0){return false}
+    if(post.carregadoUmaVez){
+        post.comentarios = []
+        post.carregadoUmaVez = false
+        return
+    }
+    if(post.qtde_comentario === 0){return}
     post.loadingComentarios = true
     const res = await getComments(authStore.auth?.token, post.id_post) as DefaultResponse
     if (res.status) {
@@ -89,8 +93,8 @@ const timeAgo = (date: string) => {
         return diffHours === 1 ? '1h atrás' : diffHours + 'h atrás'
     }else if(diffMinutes > 0){
         return diffMinutes === 1 ? '1m atrás' : diffMinutes + 'm atrás'
-    }else if(diffSeconds > 0){
-        return diffSeconds === 1 ? '1s atrás' : diffSeconds + 's atrás'
+    }else{
+        return Math.abs(diffSeconds) + 's atrás'
     }
 }
 </script>
@@ -151,19 +155,23 @@ const timeAgo = (date: string) => {
                     </button>
                 </div>
                 <!-- comments -->
-                <div v-if="post.loadingComentarios" class="border border-dashed border-neutral-700 rounded p-2">
-                    <div class="flex gap-2 mb-4">
-                        <SkeletonComponent w="30px" h="30px" rounded="full" class="mt-2" />
-                        <div class="flex flex-col w-full">
-                            <SkeletonComponent class="mb-2" w="80px" h="10px" />
-                            <SkeletonComponent class="mb-1" w="50%" h="10px" />
-                            <SkeletonComponent class="" w="150px" h="10px" />
+                <div 
+                    :class="'transition-opacity duration-1000 border-dashed border-neutral-700 rounded'
+                    +(post.comentarios && post.comentarios?.length > 0 ? ' border' : '')" 
+                    v-auto-animate
+                >
+                    <template  v-if="post.loadingComentarios">
+                        <div class="flex gap-2 mb-4 mt-2 mx-2">
+                            <SkeletonComponent w="30px" h="30px" rounded="full" class="mt-2" />
+                            <div class="flex flex-col w-full">
+                                <SkeletonComponent class="mb-2" w="80px" h="10px" />
+                                <SkeletonComponent class="mb-1" w="50%" h="10px" />
+                                <SkeletonComponent class="" w="150px" h="10px" />
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div v-else-if="post.comentarios" class="mt-2 border border-dashed border-neutral-700 rounded p-2">
-                    <div v-for="comment in post.comentarios" class="flex gap-2 mb-4" :key="comment.id_comentario">
-                        <img :src="comment.link_perfil" alt="Foto de perfil" class="mt-2 w-8 h-8 rounded-full bg-neutral-900 object-cover">
+                    </template>
+                    <div v-for="comment in post.comentarios" class="flex gap-2 mb-4 mx-2 first-of-type:mt-2" :key="comment.id_comentario">
+                        <img :src="comment.link_perfil" alt="Foto de perfil" class="mt-2 w-9 h-9 rounded-full bg-neutral-900 object-cover">
                         <div class="flex flex-col">
                             <p class="text-white text-sm mb-1">{{ comment.nome }}<span class="text-neutral-400 inline-block text-[12px] font-thin">{{ comment.arroba }}</span>
                                 <span class="text-neutral-400 inline-block text-[12px] font-thin">
