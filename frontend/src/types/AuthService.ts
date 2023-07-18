@@ -7,6 +7,7 @@ type LoginResponse = DefaultResponse & {
 }
 type Auth = {
     token: string | undefined,
+    refreshToken: string | undefined,
     exp: number,
     Nome: string,
     ID: number,

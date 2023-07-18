@@ -1,28 +1,32 @@
 import { createRouter, createWebHistory } from 'vue-router'
-// import FeedView from '../views/FeedView.vue'
+// import navigationGuard from './navigationGuard'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
-      name: 'home',
-      component: () => import('../views/FeedView.vue')
-    },
-    {
       path: '/cadastro',
       name: 'signup',
-      component: () => import('../views/SignupView.vue')
+      component: () => import('../views/SignupView.vue'),
+      meta: { title: 'Cadastro' }
     },
     {
       path: '/login',
       name: 'signin',
-      component: () => import('../views/SigninView.vue')
+      component: () => import('../views/SigninView.vue'),
+      meta: { title: 'Login' }
+    },
+    {
+      path: '/',
+      name: 'home',
+      component: () => import('../views/FeedView.vue'),
+      meta: { requireAuth: true }
     },
     {
       path: '/primeiros-passos',
       name: 'first-steps',
-      component: () => import('../views/FirstStepsView.vue')
+      component: () => import('../views/FirstStepsView.vue'),
+      meta: { requireAuth: true }
     },
     {
       path: '/inbox',
@@ -52,4 +56,5 @@ const router = createRouter({
   ]
 })
 
+// router.beforeEach(navigationGuard)
 export default router

@@ -2,7 +2,7 @@ import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import jwt_decode from 'jwt-decode'
 import type { Auth } from '@/types/AuthService'
-import type { Post } from '@/types/Post'
+import type { Post } from '@/types/PostService'
 
 type Notification = {
   id: string,
@@ -47,14 +47,15 @@ export const useAuthStore = defineStore('auth', () => {
     return undefined
   }
 
-  function setAuth(_token: string | undefined) {
-    if(_token) {
+  function setAuth(_token: string | undefined, _refreshToken: string | undefined = 'refreshToken should not have a default value') {
+    if(_token && _refreshToken) {
       const decoded = jwt_decode<{exp: number, Nome: string, Issuer: number}>(_token)
       auth.value = {
         token: _token,
         exp: decoded.exp,
         Nome: decoded.Nome,
-        ID: decoded.Issuer
+        ID: decoded.Issuer,
+        refreshToken: _refreshToken
       }
     }else{
       auth.value = undefined
