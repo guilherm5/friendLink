@@ -31,10 +31,10 @@ const unlikePost = async (token: string | undefined, id_post: number) => {
       return {status: false, error: error.response?.data}
     })
 }
-const getComments = async (token: string | undefined, id_post: number) => {
+const getComments = async (token: string | undefined, id_post: number, id_comentario: number, limit: number) => {
     if(!token) return {status: false, error: 'Token não informado'}
     
-    return await ApiService.post('/list-comentario', {id_post}, {headers: {Authorization: `${token}`}})
+    return await ApiService.post('/list-comentario', {id_post, id_comentario, limit}, {headers: {Authorization: `${token}`}})
     .then(res => {
         return {status: true, data: res.data}
     }).catch((error: AxiosError) => {

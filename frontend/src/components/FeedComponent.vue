@@ -18,6 +18,8 @@ const postStore = usePostStore()
 const authStore = useAuthStore()
 const notificationStore = useNotificationStore()
 const newComment = ref('')
+const comentsLimit = ref(5)
+const lastCommentId = ref(0)
 
 const interaction = (number: number) => {
     let interaction: string
@@ -42,20 +44,24 @@ const like = (post: Post) => {
         post.qtde_curtida++
     }
 }
-const listComments = async (post: Post) => {
-    if(post.carregadoUmaVez){
-        post.comentarios = []
-        post.carregadoUmaVez = false
-        return
+const listComments = async (post: Post, loadMore: boolean = false) => {
+    if(!loadMore){
+        if(post.carregadoUmaVez){
+            post.comentarios = []
+            lastCommentId.value = 0
+            post.carregadoUmaVez = false
+            return
+        }
     }
     if(post.qtde_comentario === 0){return}
     post.loadingComentarios = true
-    const res = await getComments(authStore.auth?.token, post.id_post) as DefaultResponse
-    if (res.status) {
+    const res = await getComments(authStore.auth?.token, post.id_post, lastCommentId.value, comentsLimit.value) as DefaultResponse
+    if (res.status && res.data) {
         const comments = res.data as CommentResponse[]
+        lastCommentId.value = comments[comments.length - 1].id_comentario
         const userComments = comments.filter(comment => comment.id_usuario_cmt === authStore.auth?.ID)
         const otherComments = comments.filter(comment => comment.id_usuario_cmt !== authStore.auth?.ID)
-        post.comentarios = [...userComments, ...otherComments]
+        post.comentarios ?  post.comentarios.push(...userComments, ...otherComments) : post.comentarios = [...userComments, ...otherComments]
         post.carregadoUmaVez = true
     }else{
         notificationStore.addNotification({
@@ -135,20 +141,18 @@ const timeAgo = (date: string) => {
                 </div>
                 <!-- post iteractions -->
                 <div class="flex mt-2 mb-2 gap-2">
-                    <button class="text-neutral-300 md:text-neutral-400 hover:text-neutral-100 group relative focus:outline-none" @click="like(post)">
+                    <button class="text-neutral-300 md:text-neutral-400 hover:text-neutral-100 group relative no-outline" @click="like(post)">
                         <Heart32Filled v-if="post.curtiu" class="text-yellow-400" height="24"/>
                         <Heart32Regular v-else height="24" class="hover:text-yellow-400"/>
                         <TooltipContainerComponent text="Curtir" width="fit"/>
                         <p class="text-[10px]">{{ post.qtde_curtida > 0 ? interaction(post.qtde_curtida) : '&nbsp;' }}</p>
                     </button>
-                    <button class="text-neutral-300 md:text-neutral-400 hover:text-neutral-100 group relative focus:outline-none" @click="listComments(post)">
-                        <!-- <Chat32Filled class="text-yellow-400" height="28"/> -->
+                    <button class="text-neutral-300 md:text-neutral-400 hover:text-neutral-100 group relative no-outline" @click="listComments(post)">
                         <Chat32Regular height="24" class="hover:text-yellow-400"/>
                         <TooltipContainerComponent text="Ver comentários" width="fit"/>
                         <p class="text-[10px]">{{ post.qtde_comentario > 0 ? interaction(post.qtde_comentario) : '&nbsp;' }}</p>
                     </button>
-                    <button class="text-neutral-300 md:text-neutral-400 hover:text-neutral-100 group relative focus:outline-none">
-                        <!-- <Chat32Filled class="text-yellow-400" height="28"/> -->
+                    <button class="text-neutral-300 md:text-neutral-400 hover:text-neutral-100 group relative no-outline">
                         <Repeat height="24" class="hover:text-yellow-400"/>
                         <TooltipContainerComponent text="Repostar" width="fit"/>
                         <p class="text-[10px]">&nbsp;</p>
@@ -156,20 +160,10 @@ const timeAgo = (date: string) => {
                 </div>
                 <!-- comments -->
                 <div 
-                    :class="'transition-opacity duration-1000 border-dashed border-neutral-700 rounded'
+                    :class="'overflow-hidden transition-opacity duration-1000 border-dashed border-neutral-700 rounded'
                     +(post.comentarios && post.comentarios?.length > 0 ? ' border' : '')" 
                     v-auto-animate
                 >
-                    <template  v-if="post.loadingComentarios">
-                        <div class="flex gap-2 mb-4 mt-2 mx-2">
-                            <SkeletonComponent w="30px" h="30px" rounded="full" class="mt-2" />
-                            <div class="flex flex-col w-full">
-                                <SkeletonComponent class="mb-2" w="80px" h="10px" />
-                                <SkeletonComponent class="mb-1" w="50%" h="10px" />
-                                <SkeletonComponent class="" w="150px" h="10px" />
-                            </div>
-                        </div>
-                    </template>
                     <div v-for="comment in post.comentarios" class="flex gap-2 mb-4 mx-2 first-of-type:mt-2" :key="comment.id_comentario">
                         <img :src="comment.link_perfil" alt="Foto de perfil" class="mt-2 w-9 h-9 rounded-full bg-neutral-900 object-cover">
                         <div class="flex flex-col">
@@ -180,6 +174,21 @@ const timeAgo = (date: string) => {
                             <p class="text-white text-sm">{{ comment.comentario }}</p>
                         </div>
                     </div>
+                    <template  v-if="post.loadingComentarios">
+                        <div class="flex gap-2 mb-4 mt-2 mx-2">
+                            <SkeletonComponent w="30px" h="30px" rounded="full" class="mt-2" />
+                            <div class="flex flex-col w-full">
+                                <SkeletonComponent class="mb-2" w="80px" h="10px" />
+                                <SkeletonComponent class="mb-1" w="50%" h="10px" />
+                                <SkeletonComponent class="" w="150px" h="10px" />
+                            </div>
+                        </div>
+                    </template>
+                    <button 
+                        v-if="!post.loadingComentarios && (post.comentarios && post.comentarios.length < post.qtde_comentario && post.comentarios.length > 0)" 
+                        @click="listComments(post, true)"
+                        class="text-white text-sm pl-8 pb-2 no-outline"
+                    >Ver mais comentários...</button>
                 </div>
                 <!-- write your comment -->
                 <form @submit.prevent="handleNewComment(post)" class="flex gap-4 items-center mt-4">
