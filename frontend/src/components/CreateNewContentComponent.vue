@@ -32,7 +32,7 @@ const setStage = (newStage: Stage) => {
                 </p>
             </button>
 
-            <div v-if="currentStage === 'selectPostOrStory'" class="transition-all bg-neutral-800 w-full max-w-3xl rounded-lg">
+            <div v-if="currentStage === 'selectPostOrStory'" class="transition-all bg-neutral-800 w-full max-w-3xl rounded-lg post-container mx-auto pb-2">
                 <button class="block ml-auto p-2 pb-0 group" @click="setStage('button')">
                     <Close class="w-6 text-neutral-700 group-focus:text-yellow-400 group-hover:text-yellow-400"/>
                 </button>

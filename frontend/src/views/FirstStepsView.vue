@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref, type Ref } from 'vue';
+import { reactive, ref } from 'vue';
 import { useNotificationStore, useAuthStore } from '../stores/global';
 import type { DefaultResponse } from '@/types/ApiService';
 import router from '@/router';
@@ -7,6 +7,8 @@ import ButtonComponent from '@/components/ButtonComponent.vue';
 import { ArrowForward, Brush } from '@vicons/ionicons5';
 import { handleInfoUpdate } from '@/services/UserService';
 import type { FirstStepInfoUpdate } from '@/types/UserService';
+import { imageUpload } from '@/utils/imageUpload';
+import type { ImageUploadReturn } from '@/utils/imageUpload';
 
 const notificationStore = useNotificationStore()
 const authStore = useAuthStore()
@@ -17,28 +19,8 @@ const form = reactive<FirstStepInfoUpdate>({
   bio: '',
   arroba: authStore.auth?.Nome.split(' ').join('') + Date.now().toString().slice(0, 5),
 })
-const fotoUrl = ref('')
-const fotoCapaUrl = ref('')
-const handleImageUpload = (e: Event, type: string) => {
-    if (!e){return}
-    const target = e.target as HTMLInputElement;
-    if(!target.files){return}
-    const image = target.files[0];
-    if(type === 'foto'){
-        form.foto_perfil = image
-        setPreview(image, fotoUrl)
-    }else{
-        form.foto_capa = image
-        setPreview(image, fotoCapaUrl)
-    }
-}
-const setPreview = (file: File, url: Ref) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onloadend = () => {
-        url.value = reader.result;
-    };
-};
+const fotoUrl = ref<string | null>(null)
+const fotoCapaUrl = ref<string | null>(null)
 const setFotoAndCoverImageFiles = async () => {
     await fetch('/src/assets/user_default_cover.jpg')
     .then((res) => res.blob())
@@ -83,7 +65,7 @@ const handleSubmit = async () => {
                 <Brush class="w-8 bg-neutral-800 p-1 rounded-l-lg" />
                 <p class="bg-neutral-800 p-1 py-[6px] md:p-1 rounded-r-lg text-sm">Escolher foto de capa</p>
             </label>
-            <input type="file" id="fotoCapa" class="hidden" name="fotoCapa" accept="image/png, image/jpeg" @change="handleImageUpload($event, 'fotoCapa')">
+            <input type="file" id="fotoCapa" class="hidden" name="fotoCapa" accept="image/png, image/jpeg" @change="imageUpload($event, (data: ImageUploadReturn) => {if(data.error){return}; form.foto_capa = data.image; fotoCapaUrl = data.urlPreview})">
         </div>
         <div class="relative">
             <div class="bg-neutral-900 rounded-full p-2 w-36 h-36 absolute -top-16 left-1/2 -translate-x-1/2">
@@ -96,7 +78,7 @@ const handleSubmit = async () => {
                         <Brush class="w-8 bg-neutral-800 p-1 rounded-lg" />
                         <p class="text-center bg-neutral-800 p-1 rounded-r-lg hidden md:block text-sm">Escolher foto de perfil</p>
                     </label>
-                    <input type="file" id="fotoPerfil" class="hidden" name="fotoPerfil" accept="image/png, image/jpeg" @change="handleImageUpload($event, 'foto')">
+                    <input type="file" id="fotoPerfil" class="hidden" name="fotoPerfil" accept="image/png, image/jpeg" @change="imageUpload($event, (data: ImageUploadReturn) => {if(data.error){return}; form.foto_perfil = data.image; fotoUrl = data.urlPreview})">
                 </div>
             </div>
         </div>

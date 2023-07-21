@@ -94,7 +94,7 @@ const timeAgo = (date: string) => {
 <template>
     <div class="mt-4 w-full px-2 md:px-0">
         <div v-for="post in postStore.posts" class="w-full max-w-3xl mx-auto my-4 bg-neutral-800 p-4 rounded-lg" :key="post.id_post">
-            <div class="flex flex-col max-w-[720px]">
+            <div class="flex flex-col max-w-[640px] mx-auto">
                 <!-- post header -->
                 <div class="flex gap-2 items-center">
                     <router-link :to="{name: 'profile', params:{arroba: post.arroba}}">
@@ -119,7 +119,7 @@ const timeAgo = (date: string) => {
                     <p v-if="post.post_texto" class="my-2">{{ post.post_texto }}</p>
                 </div>
                 <!-- post image -->
-                <div v-if="post.post_imagem" class="rounded-lg overflow-hidden w-full max-w-[720px] max-h-[400px] mx-auto">
+                <div v-if="post.post_imagem" class="rounded-lg overflow-hidden w-full max-w-[640px] max-h-[480px] mx-auto bg-neutral-900">
                     <img 
                         :src="post.post_imagem"
                         class="w-full h-full object-cover"
