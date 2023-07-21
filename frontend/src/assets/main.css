@@ -25,6 +25,9 @@ html, body { height: 100% ; scroll-behavior: smooth; background-color: rgb(23,23
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+.text-area-scrollbar::-webkit-scrollbar-track {
+  background-color: transparent;
+}
 /* width */
 ::-webkit-scrollbar {
   width: 5px;
@@ -59,8 +62,15 @@ a{
 .no-outline:focus, .no-outline:hover{
   outline: none;
   color: #eab308;
+  fill: #eab308;
 }
-
+.contenteditable:focus{
+  outline: 1px solid #eab308;
+}
+.contenteditable[placeholder]:empty:before {
+  content: attr(placeholder);
+  color: #737373; 
+}
 /* .router-link-active{
   color: #eab308;
 } */

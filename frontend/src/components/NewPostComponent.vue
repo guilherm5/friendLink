@@ -1,23 +1,39 @@
 <script setup lang="ts">
-import ButtonComponent from '@/components/ButtonComponent.vue';
-import { Add12Filled } from '@vicons/fluent';
-import { onMounted, ref } from 'vue';
+import ButtonComponent from './ButtonComponent.vue';
+import { Close, Image } from '@vicons/ionicons5';
+import TooltipContainerComponent from './TooltipContainerComponent.vue';
+import { reactive, ref } from 'vue';
 
-const mounted = ref(false);
-onMounted(() => {
-    mounted.value = true;
-});
+const form = reactive({
+    text: '',
+})
+const editableContent = ref<HTMLElement | null>(null)
+const submit = () => {
+    form.text = editableContent.value?.textContent ?? ''
+}
 </script>
 
 <template>
-    <div class="w-full px-2 md:px-0" v-auto-animate>
-        <div class="mt-4 w-full max-w-3xl mx-auto bg-neutral-800 p-4 rounded-lg" v-auto-animate>
-            <p class="text-center text-neutral-700">--botão/componente de postagem aqui--</p>
-            <!-- <ButtonComponent v-if="mounted" class="mx-auto rounded-sm gap-1 px-6" title="Criar" iconSide="left">
-                <template #icon>
-                    <Add12Filled height="20"/>
-                </template>
-            </ButtonComponent> -->
+    <div>
+        <button class="block ml-auto p-2 pb-0 group" @click="$emit('setStage', 'button')">
+            <Close class="w-6 text-neutral-700 group-focus:text-yellow-400 group-hover:text-yellow-400"/>
+        </button>
+        
+        <div class="p-2">
+            <div 
+            ref="editableContent" 
+            role="textbox" 
+            contenteditable 
+            class="text-area-scrollbar overscroll-contain contenteditable overflow-y-scroll max-h-80 outline-yellow-400 bg-neutral-700 placeholder:text-neutral-500 text-white rounded-lg p-2 w-full" 
+            placeholder="Compartilhe suas ideias"></div>
+            
+            <div class="mt-2 flex justify-between">
+                <button class="p-2 rounded-full bg-neutral-900 text-yellow-400 relative group">
+                    <Image width="24"/> 
+                    <TooltipContainerComponent text="Adicionar foto" width="fit" side="right"/>
+                </button>
+                <ButtonComponent @click="submit" title="Publicar" />
+            </div>
         </div>
     </div>
 </template>

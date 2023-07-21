@@ -762,6 +762,10 @@ video {
   height: 1rem;
 }
 
+.h-40{
+  height: 10rem;
+}
+
 .h-5{
   height: 1.25rem;
 }
@@ -790,8 +794,17 @@ video {
   height: 80px;
 }
 
+.h-fit{
+  height: -moz-fit-content;
+  height: fit-content;
+}
+
 .h-full{
   height: 100%;
+}
+
+.max-h-80{
+  max-height: 20rem;
 }
 
 .max-h-\[400px\]{
@@ -1005,16 +1018,16 @@ video {
   justify-content: space-between;
 }
 
-.gap-1{
-  gap: 0.25rem;
-}
-
 .gap-2{
   gap: 0.5rem;
 }
 
 .gap-4{
   gap: 1rem;
+}
+
+.gap-\[8px\]{
+  gap: 8px;
 }
 
 .overflow-hidden{
@@ -1031,6 +1044,14 @@ video {
 
 .overflow-x-scroll{
   overflow-x: scroll;
+}
+
+.overflow-y-scroll{
+  overflow-y: scroll;
+}
+
+.overscroll-contain{
+  overscroll-behavior: contain;
 }
 
 .truncate{
@@ -1057,10 +1078,6 @@ video {
 
 .rounded-lg{
   border-radius: 0.5rem;
-}
-
-.rounded-sm{
-  border-radius: 0.125rem;
 }
 
 .rounded-xl{
@@ -1190,6 +1207,10 @@ video {
   padding: 0.5rem;
 }
 
+.p-3{
+  padding: 0.75rem;
+}
+
 .p-4{
   padding: 1rem;
 }
@@ -1206,11 +1227,6 @@ video {
 .px-4{
   padding-left: 1rem;
   padding-right: 1rem;
-}
-
-.px-6{
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
 }
 
 .py-1{
@@ -1231,6 +1247,10 @@ video {
 .py-\[6px\]{
   padding-top: 6px;
   padding-bottom: 6px;
+}
+
+.pb-0{
+  padding-bottom: 0px;
 }
 
 .pb-1{
@@ -1406,6 +1426,10 @@ video {
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
+.outline-yellow-400{
+  outline-color: #facc15;
+}
+
 .filter{
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
@@ -1414,6 +1438,12 @@ video {
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-backdrop-filter;
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.transition-all{
+  transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
@@ -1460,6 +1490,10 @@ html, body {
   /* Firefox */
 }
 
+.text-area-scrollbar::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
 /* width */
 
 ::-webkit-scrollbar {
@@ -1503,6 +1537,16 @@ a{
 .no-outline:focus, .no-outline:hover{
   outline: none;
   color: #eab308;
+  fill: #eab308;
+}
+
+.contenteditable:focus{
+  outline: 1px solid #eab308;
+}
+
+.contenteditable[placeholder]:empty:before {
+  content: attr(placeholder);
+  color: #737373;
 }
 
 /* .router-link-active{
@@ -1567,8 +1611,28 @@ a{
   top: -1rem;
 }
 
+.group:hover .group-hover\:border-yellow-400{
+  --tw-border-opacity: 1;
+  border-color: rgb(250 204 21 / var(--tw-border-opacity));
+}
+
+.group:hover .group-hover\:text-yellow-400{
+  --tw-text-opacity: 1;
+  color: rgb(250 204 21 / var(--tw-text-opacity));
+}
+
 .group:hover .group-hover\:opacity-100{
   opacity: 1;
+}
+
+.group:focus .group-focus\:border-yellow-400{
+  --tw-border-opacity: 1;
+  border-color: rgb(250 204 21 / var(--tw-border-opacity));
+}
+
+.group:focus .group-focus\:text-yellow-400{
+  --tw-text-opacity: 1;
+  color: rgb(250 204 21 / var(--tw-text-opacity));
 }
 
 @media (min-width: 768px){
@@ -1615,6 +1679,10 @@ a{
 
   .md\:h-5{
     height: 1.25rem;
+  }
+
+  .md\:h-60{
+    height: 15rem;
   }
 
   .md\:w-10{
