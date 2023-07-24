@@ -7,8 +7,8 @@ import SkeletonComponent from './SkeletonComponent.vue';
 import { getComments, likePost, unlikePost } from '@/services/PostService';
 import type { Post, CommentResponse } from '@/types/PostService';
 import type { DefaultResponse } from '@/types/ApiService';
-import { createComment } from '@/services/PostService';
 import { ref } from 'vue';
+import CommentComponent from './CommentComponent.vue';
 
 defineProps<{
     postsLoading: boolean,
@@ -17,7 +17,8 @@ defineProps<{
 const postStore = usePostStore()
 const authStore = useAuthStore()
 const notificationStore = useNotificationStore()
-const newComment = ref('')
+const comentsLimit = ref(5)
+const lastCommentId = ref(0)
 
 const interaction = (number: number) => {
     let interaction: string
@@ -42,16 +43,24 @@ const like = (post: Post) => {
         post.qtde_curtida++
     }
 }
-const listComments = async (post: Post) => {
-    if(post.carregadoUmaVez){return false}
-    if(post.qtde_comentario === 0){return false}
+const listComments = async (post: Post, loadMore: boolean = false) => {
+    if(!loadMore){
+        if(post.carregadoUmaVez){
+            post.comentarios = []
+            lastCommentId.value = 0
+            post.carregadoUmaVez = false
+            return
+        }
+    }
+    if(post.qtde_comentario === 0 || post.loadingComentarios){return}
     post.loadingComentarios = true
-    const res = await getComments(authStore.auth?.token, post.id_post) as DefaultResponse
-    if (res.status) {
+    const res = await getComments(authStore.auth?.token, post.id_post, lastCommentId.value, comentsLimit.value) as DefaultResponse
+    if (res.status && res.data) {
         const comments = res.data as CommentResponse[]
+        lastCommentId.value = comments[comments.length - 1].id_comentario
         const userComments = comments.filter(comment => comment.id_usuario_cmt === authStore.auth?.ID)
         const otherComments = comments.filter(comment => comment.id_usuario_cmt !== authStore.auth?.ID)
-        post.comentarios = [...userComments, ...otherComments]
+        post.comentarios ?  post.comentarios.push(...userComments, ...otherComments) : post.comentarios = [...userComments, ...otherComments]
         post.carregadoUmaVez = true
     }else{
         notificationStore.addNotification({
@@ -61,20 +70,7 @@ const listComments = async (post: Post) => {
     }
     post.loadingComentarios = false
 }
-const handleNewComment = async (post: Post) => {
-    if(newComment.value.length === 0){return false}
-    const res = await createComment(authStore.auth?.token, post.id_post, newComment.value) as DefaultResponse
-    if (res.status) {
-        post.comentarios ? post.comentarios.unshift(res.data) : post.comentarios = [res.data]
-        post.qtde_comentario++
-        newComment.value = ''
-    }else{
-        notificationStore.addNotification({
-            type: 'error',
-            body: res.error?.response?.data as string ?? 'Ocorreu um erro inesperado.',
-        })
-    }
-}
+
 const timeAgo = (date: string) => {
     const now = new Date()
     const postDate = new Date(date)
@@ -89,8 +85,8 @@ const timeAgo = (date: string) => {
         return diffHours === 1 ? '1h atrás' : diffHours + 'h atrás'
     }else if(diffMinutes > 0){
         return diffMinutes === 1 ? '1m atrás' : diffMinutes + 'm atrás'
-    }else if(diffSeconds > 0){
-        return diffSeconds === 1 ? '1s atrás' : diffSeconds + 's atrás'
+    }else{
+        return Math.abs(diffSeconds) + 's atrás'
     }
 }
 </script>
@@ -131,54 +127,24 @@ const timeAgo = (date: string) => {
                 </div>
                 <!-- post iteractions -->
                 <div class="flex mt-2 mb-2 gap-2">
-                    <button class="text-neutral-300 md:text-neutral-400 hover:text-neutral-100 group relative focus:outline-none" @click="like(post)">
+                    <button class="text-neutral-300 md:text-neutral-400 hover:text-neutral-100 group relative no-outline" @click="like(post)">
                         <Heart32Filled v-if="post.curtiu" class="text-yellow-400" height="24"/>
                         <Heart32Regular v-else height="24" class="hover:text-yellow-400"/>
                         <TooltipContainerComponent text="Curtir" width="fit"/>
                         <p class="text-[10px]">{{ post.qtde_curtida > 0 ? interaction(post.qtde_curtida) : '&nbsp;' }}</p>
                     </button>
-                    <button class="text-neutral-300 md:text-neutral-400 hover:text-neutral-100 group relative focus:outline-none" @click="listComments(post)">
-                        <!-- <Chat32Filled class="text-yellow-400" height="28"/> -->
+                    <button class="text-neutral-300 md:text-neutral-400 hover:text-neutral-100 group relative no-outline" @click="listComments(post)">
                         <Chat32Regular height="24" class="hover:text-yellow-400"/>
                         <TooltipContainerComponent text="Ver comentários" width="fit"/>
                         <p class="text-[10px]">{{ post.qtde_comentario > 0 ? interaction(post.qtde_comentario) : '&nbsp;' }}</p>
                     </button>
-                    <button class="text-neutral-300 md:text-neutral-400 hover:text-neutral-100 group relative focus:outline-none">
-                        <!-- <Chat32Filled class="text-yellow-400" height="28"/> -->
+                    <button class="text-neutral-300 md:text-neutral-400 hover:text-neutral-100 group relative no-outline">
                         <Repeat height="24" class="hover:text-yellow-400"/>
                         <TooltipContainerComponent text="Repostar" width="fit"/>
                         <p class="text-[10px]">&nbsp;</p>
                     </button>
                 </div>
-                <!-- comments -->
-                <div v-if="post.loadingComentarios" class="border border-dashed border-neutral-700 rounded p-2">
-                    <div class="flex gap-2 mb-4">
-                        <SkeletonComponent w="30px" h="30px" rounded="full" class="mt-2" />
-                        <div class="flex flex-col w-full">
-                            <SkeletonComponent class="mb-2" w="80px" h="10px" />
-                            <SkeletonComponent class="mb-1" w="50%" h="10px" />
-                            <SkeletonComponent class="" w="150px" h="10px" />
-                        </div>
-                    </div>
-                </div>
-                <div v-else-if="post.comentarios" class="mt-2 border border-dashed border-neutral-700 rounded p-2">
-                    <div v-for="comment in post.comentarios" class="flex gap-2 mb-4" :key="comment.id_comentario">
-                        <img :src="comment.link_perfil" alt="Foto de perfil" class="mt-2 w-8 h-8 rounded-full bg-neutral-900 object-cover">
-                        <div class="flex flex-col">
-                            <p class="text-white text-sm mb-1">{{ comment.nome }}
-                                <span class="text-neutral-400 inline-block text-[12px] font-thin">{{ comment.arroba }}</span>
-                                <span class="text-neutral-400 inline-block text-[12px] font-thin">
-                                <div class="ml-1 mb-[2px] inline-block w-[3px] h-[3px] bg-neutral-400 rounded-full"></div> {{ timeAgo(comment.dt_comentario) }}</span>
-                            </p>
-                            <p class="text-white text-sm">{{ comment.comentario }}</p>
-                        </div>
-                    </div>
-                </div>
-                <!-- write your comment -->
-                <form @submit.prevent="handleNewComment(post)" class="flex gap-4 items-center mt-4">
-                    <img src="@/assets/user_default_foto.jpeg" alt="Foto de perfil" class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-neutral-900 object-cover">
-                    <input v-model="newComment" type="text" class="bg-neutral-700 placeholder:text-neutral-500 text-white rounded-lg p-2 w-full" placeholder="Adicione um comentário...">
-                </form>
+                <CommentComponent :post="post" :listComments="listComments" :interaction="interaction" :timeAgo="timeAgo" />
             </div>
         </div>
 
