@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
 import { handleSignin } from '@/services/AuthService';
-import { useNotificationStore, useAuthStore } from '../stores/global';
+import { useNotificationStore, useAuthStore, useRedirectStore } from '../stores/global';
 import type { LoginResponse } from '@/types/AuthService';
 import router from '@/router';
 import ButtonComponent from '@/components/ButtonComponent.vue';
@@ -9,18 +9,32 @@ import { EnterOutline } from '@vicons/ionicons5'
 
 const notificationStore = useNotificationStore()
 const authStore = useAuthStore()
+const redirectStore = useRedirectStore()
 const formLoading = ref(false)
 const form = reactive({
   email: '',
   senha: '',
 })
 
+if(redirectStore.message){
+  notificationStore.addNotification({
+    type: 'error',
+    body: redirectStore.message,
+  })
+  redirectStore.clearMessage()
+}
+
 const handleSubmit = async () => {
   formLoading.value = true
   const res = await handleSignin({email: form.email, senha: form.senha}) as LoginResponse
   if (res.status) {
-    authStore.setAuth(res.data.logged)
-    router.push({ name: 'home' })
+    authStore.setAuth(res.data?.logged, res.data?.refresh)
+    if(redirectStore.redirectTo){
+      router.push({ name: redirectStore.redirectTo })
+      redirectStore.clearRedirectTo()
+    }else{
+      router.push({ name: 'home' })
+    }
   }else{
     notificationStore.addNotification({
       type: 'error',

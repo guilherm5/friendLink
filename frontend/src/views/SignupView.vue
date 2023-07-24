@@ -19,15 +19,15 @@ const form = reactive({
 
 const handleSubmit = async () => {
   formLoading.value = true
-  const res = await handleSignup(form) as DefaultResponse
-  if (res.status) {
+  const response = await handleSignup(form) as DefaultResponse
+  if (response.status) {
     const res = await handleSignin({email: form.email, senha: form.senha}) as LoginResponse
-    authStore.setAuth(res.data.logged)
+    authStore.setAuth(res.data?.logged, res.data?.refresh)
     router.push({ name: 'first-steps' })
   }else{
     notificationStore.addNotification({
       type: 'error',
-      body: res.error?.response?.data as string ?? 'Ocorreu um erro interno, entre em contato com o suporte.',
+      body: response.error?.response?.data as string ?? 'Ocorreu um erro interno, entre em contato com o suporte.',
     })
   }
   formLoading.value = false

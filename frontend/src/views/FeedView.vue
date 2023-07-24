@@ -9,7 +9,7 @@ import { useAuthStore } from '@/stores/global';
 import type { DefaultResponse } from '@/types/ApiService';
 import { ref, onMounted } from 'vue';
 import { usePostStore } from '../stores/global';
-import type { Post } from '@/types/Post';
+import type { Post } from '@/types/PostService';
 
 const notificationStore = useNotificationStore()
 const postsLoading = ref(false)
