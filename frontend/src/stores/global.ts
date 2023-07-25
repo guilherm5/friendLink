@@ -76,8 +76,8 @@ export const usePostStore = defineStore('post', () => {
   const updatePostsFunction = ref<Function | null>(null)
   const updatePosts = (): void => updatePostsFunction.value ? updatePostsFunction.value() : null
 
-  function addPosts(newPosts: Post[]) {
-    posts.value.push(...newPosts)
+  function addPosts(newPosts: Post[], start: boolean = false) {
+    start ?  posts.value.unshift(...newPosts) : posts.value.push(...newPosts)
   }
   function setPosts(newPosts: Post[]) {
     posts.value = newPosts
@@ -89,7 +89,11 @@ export const usePostStore = defineStore('post', () => {
     const index = posts.value.findIndex(p => p.id_post === post.id_post)
     posts.value[index] = post
   }
-  return { posts, addPosts, onUpdatePosts, updatePosts, setPosts, updatePostValue }
+  function removePost(id_post: number) {
+    const index = posts.value.findIndex(p => p.id_post === id_post)
+    posts.value.splice(index, 1)
+  }
+  return { posts, addPosts, onUpdatePosts, updatePosts, setPosts, updatePostValue, removePost }
 })
 
 export const useRedirectStore = defineStore('redirect', () => {

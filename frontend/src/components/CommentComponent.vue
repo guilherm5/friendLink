@@ -108,8 +108,8 @@ const handleNewComment = async (e: Event, post: Post) => {
 
 <template>
     <div 
-        :class="'pt-2 overflow-hidden transition-opacity duration-1000 border-dashed border-neutral-700 rounded'
-        +(post.comentarios && post.comentarios?.length > 0 ? ' border' : '')" 
+        :class="'overflow-hidden transition-opacity duration-1000 border-dashed border-neutral-700 rounded'
+        +(post.comentarios && post.comentarios?.length > 0 ? ' border pt-2' : 'pt-0')" 
         v-auto-animate
     >
         <div v-for="comment in post.comentarios" class="flex gap-2 mx-2 first-of-type:mt-2" :key="comment.id_comentario">
@@ -144,8 +144,8 @@ const handleNewComment = async (e: Event, post: Post) => {
 
                 <!-- Replies -->
                 <div 
-                    :class="'my-2 overflow-hidden transition-opacity duration-1000 border-dashed border-neutral-700 rounded'
-                    +((comment.respostas && comment.respostas?.length > 0) || replyingCommentId === comment.id_comentario ? ' border p-2' : 'p-0')" 
+                    :class="'my-2 overflow-hidden transition-opacity duration-1000 border-dashed border-neutral-700'
+                    +((comment.respostas && comment.respostas?.length > 0) || replyingCommentId === comment.id_comentario ? ' border-l p-2' : 'p-0')" 
                     v-auto-animate
                 >
                     <form v-if="replyingCommentId === comment.id_comentario" @submit.prevent="handleNewReply($event, comment)" class="">

@@ -5,9 +5,10 @@ import { reactive, ref } from 'vue';
 import { imageUpload, type ImageUploadReturn } from '@/utils/imageUpload';
 import ImageCropperComponent from '@/components/ImageCropperComponent.vue';
 import TooltipContainerComponent from '@/components/TooltipContainerComponent.vue';
-import { useNotificationStore, useAuthStore } from '../stores/global';
+import { useNotificationStore, useAuthStore, usePostStore } from '../stores/global';
 import { createPost } from '@/services/PostService';
 import type { DefaultResponse } from '@/types/ApiService';
+import type { Post } from '@/types/PostService';
 
 const form = reactive({
     post_texto: '',
@@ -16,6 +17,7 @@ const form = reactive({
 const emit = defineEmits(['setStage'])
 const formLoading = ref(false)
 const authStore = useAuthStore()
+const postStore = usePostStore()
 const notificationStore = useNotificationStore()
 const editableContent = ref<HTMLElement | null>(null)
 const imageToBeCropped = ref<string | null>(null)
@@ -26,11 +28,11 @@ const handleImageUpload = (data: ImageUploadReturn) => {
 }
 const submit = async () => {
     formLoading.value = true
-    form.post_texto = editableContent.value?.textContent ?? ''
+    form.post_texto = editableContent.value?.innerText ?? ''
     if(!form.post_texto && !form.file){
         notificationStore.addNotification({
             type: 'error',
-            body: 'Para ppublicar algo escreva um texto ou selecione uma imagem.',
+            body: 'Para publicar algo escreva um texto ou selecione uma imagem.',
         })
     }
 
@@ -40,8 +42,10 @@ const submit = async () => {
             type: 'success',
             body: 'Você fez uma nova postagem e ela já está disponível para todos.',
         })
-
-        editableContent.value!.textContent = ''
+        const post = res.data as Post
+        postStore.addPosts([post], true)
+        
+        editableContent.value!.innerText = ''
         form.post_texto = ''
         form.file = null
         imageToBeCropped.value = null

@@ -4,7 +4,7 @@ import { DotsVertical, Repeat } from '@vicons/tabler';
 import TooltipContainerComponent from './TooltipContainerComponent.vue';
 import { usePostStore, useAuthStore, useNotificationStore } from '../stores/global';
 import SkeletonComponent from './SkeletonComponent.vue';
-import { getComments, likePost, unlikePost } from '@/services/PostService';
+import { getComments, likePost, unlikePost, deletePost } from '@/services/PostService';
 import type { Post, CommentResponse } from '@/types/PostService';
 import type { DefaultResponse } from '@/types/ApiService';
 import { ref } from 'vue';
@@ -89,6 +89,18 @@ const timeAgo = (date: string) => {
         return Math.abs(diffSeconds) + 's atrás'
     }
 }
+const handleDeletePost = async (post: Post) => {
+    postStore.removePost(post.id_post)
+    const res = await deletePost(authStore.auth?.token, post.id_post) as DefaultResponse
+    if (!res.status) {
+        notificationStore.addNotification({
+            type: 'error',
+            body: res.error?.response?.data as string ?? 'Ocorreu um erro inesperado.',
+        })
+
+        postStore.addPosts([post])
+    }
+}
 </script>
 
 <template>
@@ -110,13 +122,21 @@ const timeAgo = (date: string) => {
                         </div>
                     </router-link>
 
-                    <button class="text-neutral-300 md:text-neutral-400 hover:text-neutral-100 group ml-auto">
-                        <DotsVertical class="h-4 md:h-5"/>
-                    </button>
+                    <div class="relative ml-auto group">
+                        <button class="text-neutral-300 md:text-neutral-400 hover:text-neutral-100  min-w-[50px] flex justify-end no-outline" :id="'options-button'+post.id_post" aria-expanded="true" aria-haspopup="true">
+                            <DotsVertical class="h-4 md:h-5"/>
+                        </button>
+
+                        <div class="opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity group-hover:pointer-events-auto absolute right-0 z-10 mt-0 w-56 origin-top-right rounded-md bg-black border border-neutral-700 shadow-lg focus:outline-none" role="menu" aria-orientation="vertical" :aria-labelledby="'options-button'+post.id_post" tabindex="-1">
+                            <div class="py-1 text-yellow-400 flex flex-col" role="none">
+                                <button @click="handleDeletePost(post)" class="px-4 py-2 text-sm hover:bg-neutral-800" role="menuitem" tabindex="-1">Apagar</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <!-- post text -->
                 <div class="post-text text-white my-2 text-sm whitespace-pre-wrap">
-                    <p v-if="post.post_texto" class="my-2">{{ post.post_texto }}</p>
+                    <div v-if="post.post_texto" class="my-2">{{ post.post_texto.replace(/\n\s*\n/g, '\n\n') }}</div>
                 </div>
                 <!-- post image -->
                 <div v-if="post.post_imagem" class="rounded-lg overflow-hidden w-full max-w-[640px] max-h-[480px] mx-auto bg-neutral-900">
