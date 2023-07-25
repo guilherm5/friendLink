@@ -8,25 +8,36 @@ import {
 import router from '@/router';
 import { computed } from 'vue';
 import TooltipContainerComponent from '@/components/TooltipContainerComponent.vue';
-import { usePostStore } from '../stores/global';
+import { usePostStore, useAuthStore } from '../stores/global';
 
 const siteUrl = window.location.href
 const currentRoute = computed(() => router.currentRoute.value.name as string)
 const postStore = usePostStore()
+const authStore = useAuthStore()
+const handleLogout = () => {
+  authStore.removeAuth()
+  router.push({name: 'signin'})
+}
 </script>
 
 <template>
-  <nav class="z-10 w-full flex sticky left-0 top-0 md:hidden px-4 py-2 bg-neutral-900">
+  <nav class="z-50 w-full flex sticky left-0 top-0 md:hidden px-4 py-2 bg-neutral-900">
     <ul class="flex w-full justify-between items-center">
       <li>
         <a :href="siteUrl"><img src="@/assets/logo_horizontal.svg" width="90" /></a>
       </li>
-      <li>
+      <li class="group relative" id="nav-config2">
         <router-link :to="{name:'configurations'}" class="text-neutral-300 md:text-neutral-400 hover:text-neutral-100 group">
           <Settings32Filled v-if="(currentRoute === 'configurations')" class="text-yellow-400" height="28"/>
           <Settings32Regular v-else height="28" class="hover:text-yellow-400"/>
           <TooltipContainerComponent text="Configurações" width="fit" side="left"/>
         </router-link>
+
+        <div class="opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity group-hover:pointer-events-auto absolute right-0 z-10 mt-0 w-56 origin-top-right rounded-md bg-black border border-neutral-700 shadow-lg focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="nav-config2" tabindex="-1">
+            <div class="py-1 text-yellow-400 flex flex-col" role="none">
+                <button @click="handleLogout" class="px-4 py-2 text-sm hover:bg-neutral-800" role="menuitem" tabindex="-1">Sair</button>
+            </div>
+        </div>
       </li>
     </ul>
   </nav>
@@ -84,13 +95,15 @@ const postStore = usePostStore()
     </ul>
 
     <ul class="hidden md:flex lg:w-full lg:max-w-xs justify-end">
-      <li class="relative">
-        <router-link :to="{name:'configurations'}" class="text-neutral-300 md:text-neutral-400 hover:text-neutral-100 group">
-          <Settings32Filled v-if="(currentRoute === 'configurations')" class="text-yellow-400" height="28"/>
-          <Settings32Regular v-else height="28" class="hover:text-yellow-400"/>
-          <TooltipContainerComponent text="Configurações" width="fit" side="left"/>
-        </router-link>
-        <div v-if="(currentRoute === 'configurations')" class="hidden md:block w-2 h-2 rounded-full bg-yellow-400 absolute top-30 left-1/2 -translate-x-1/2"></div>
+      <li class="group relative" id="nav-config">
+        <button class="text-neutral-300 md:text-neutral-400 hover:text-neutral-100 group">
+          <Settings32Regular height="28" class="hover:text-yellow-400"/>
+        </button>
+        <div class="opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity group-hover:pointer-events-auto absolute right-0 z-10 mt-0 w-56 origin-top-right rounded-md bg-black border border-neutral-700 shadow-lg focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="nav-config" tabindex="-1">
+            <div class="py-1 text-yellow-400 flex flex-col" role="none">
+                <button @click="handleLogout" class="px-4 py-2 text-sm hover:bg-neutral-800" role="menuitem" tabindex="-1">Sair</button>
+            </div>
+        </div>
       </li>
     </ul>
   </nav>

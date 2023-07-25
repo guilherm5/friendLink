@@ -1,6 +1,16 @@
 import type { AxiosError } from 'axios';
 import { ApiService } from '@/services/ApiService';
 
+const createPost = async (token: string | undefined, form: {post_texto: string | null, file: File | null}) => {
+    if(!token) return {status: false, error: 'Token não informado'}
+    
+    return await ApiService.post('/post', {post_texto: form.post_texto ?? '', file: form.file ?? undefined}, {headers: {Authorization: `${token}`}})
+    .then(res => {
+        return {status: true, data: res.data}
+    }).catch((error: AxiosError) => {
+        return {status: false, error: error.response?.data}
+    })
+}
 const getPosts = async (token: string | undefined, id_post: number, limit_post: number) => {
     if(!token) return {status: false, error: 'Token não informado'}
     
@@ -111,17 +121,16 @@ const unlikeReply = async (token: string | undefined, id_resp_comentario: number
       return {status: false, error: error.response?.data}
     })
 }
-// const likeReply = async (token: string | undefined, id_comentario: number) => {
-//     if(!token) return {status: false, error: 'Token não informado'}
+const deletePost = async (token: string | undefined, id_post: number) => {
+    if(!token) return {status: false, error: 'Token não informado'}
     
-//     return await ApiService.post('/curte-resp-comentario', {id_comentario}, {headers: {Authorization: `${token}`}})
-//     .then(res => {
-//         return {status: true, data: res.data}
-//     }).catch((error: AxiosError) => {
-//       return {status: false, error: error.response?.data}
-//     })
-// }
-
+    return await ApiService.delete('/delete-post', {data: {id_post}, headers: {Authorization: `${token}`}})
+    .then(res => {
+        return {status: true, data: res.data}
+    }).catch((error: AxiosError) => {
+      return {status: false, error: error.response?.data}
+    })
+}
 
 export {
     getPosts,
@@ -134,5 +143,7 @@ export {
     likeReply,
     unlikeReply,
     createReply,
-    getReplies
+    getReplies,
+    createPost,
+    deletePost
 }

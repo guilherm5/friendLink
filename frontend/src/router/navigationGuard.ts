@@ -7,21 +7,36 @@ type RouteLocationNormalizedExtended = RouteLocationNormalized & {
     }
 }
 
+const publicRoutes = ['signin', 'signup']
+
 const navigationGuard = async (to: RouteLocationNormalizedExtended) => {
-    to.meta?.title && (document.title = to.meta.title as string + ' - ' + document.title)
+    if(to.meta?.title){
+        document.title = to.meta.title as string + ' - ' + document.title
+    }else{
+        document.title = import.meta.env.VITE_APP_NAME
+    }
     return checkAuth(to)
 }
 
 const checkAuth = async (to: RouteLocationNormalizedExtended) => {
     const authStore = useAuthStore()
-    if(to.meta?.requireAuth) {
-        if(!authStore.auth?.token || !authStore.auth?.token){
-            return { name: 'signin' }
+    const token = authStore.auth?.token
+    const refreshToken = authStore.auth?.refreshToken
+    const requireAuth = to.meta?.requireAuth
+    const routeName = to.name
+
+    if(requireAuth && !token){
+        return { name: 'signin' }
+    }else if(!requireAuth && token){
+        return { name: 'home' }
+    }else if(token && refreshToken){
+        if(routeName && publicRoutes.includes(routeName as string)){
+            return { name: 'home' }
+        }else{
+            return true
         }
     }else{
-        if(authStore.auth?.token) {
-            return { name: 'home' }
-        }
+        return true
     }
 }
 

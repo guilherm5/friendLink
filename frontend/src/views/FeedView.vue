@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import FeedComponent from '@/components/FeedComponent.vue';
 import NavComponent from '@/components/NavComponent.vue';
-import NewPostComponent from '@/components/NewPostComponent.vue';
+import CreateNewContentComponent from '@/components/CreateNewContentComponent.vue';
 import StoryComponent from '@/components/StoryComponent.vue';
 import { useNotificationStore } from '@/stores/global';
 import { getPosts } from '@/services/PostService';
@@ -79,9 +79,9 @@ async function fetchPosts(): Promise<false | Post[]>{
       <section class="h-16 hidden md:flex w-full max-w-xs bg-neutral-800 ml-4">
         
       </section>
-      <section class="h-16 flex flex-col w-full items-center mx-auto">
+      <section class="h-16 flex flex-col w-full max-w-[680px] items-center mx-auto" v-auto-animate>
         <StoryComponent />
-        <NewPostComponent />
+        <CreateNewContentComponent stage="button" />
         <FeedComponent :postsLoading="postsLoading" />
         <div @click="postStore.updatePosts()" :class="(endOfPosts ? 'opacity-70' : 'opacity-0 pointer-events-none') + ' text-neutral-500 font-medium pb-[70px] pt-4 md:pb-6 cursor-pointer'" id="loadMorePosts">🌠 você chegou ao fim do feed. Atualizar</div>
       </section>
