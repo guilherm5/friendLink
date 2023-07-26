@@ -7,6 +7,7 @@ import type { Post, Comment, ReplyResponse } from '@/types/PostService';
 import { useAuthStore, useNotificationStore } from '@/stores/global';
 import { ref } from 'vue';
 import type { DefaultResponse } from '@/types/ApiService';
+import { useCurrentUserStore } from '../stores/global';
 
 defineProps<{
     post: Post,
@@ -15,6 +16,7 @@ defineProps<{
     timeAgo: (date: string) => string,
 }>()
 
+const currentUserStore = useCurrentUserStore()
 const repliesLimit = ref<number>(5)
 const replyingCommentId = ref<number | false>(false)
 const authStore = useAuthStore()
@@ -56,7 +58,13 @@ const listReplies = async (comment: Comment, loadMore: boolean = false) => {
     if (res.status && res.data) {
         const replies = res.data as ReplyResponse[]
         comment.lastReplyId = replies[replies.length - 1].id_resp_comentario
-        comment.respostas ? comment.respostas.push(...res.data) : comment.respostas = res.data
+        if(comment.respostas && !comment.carregadoUmaVez){
+            comment.respostas = res.data
+        }else if(comment.respostas){
+            comment.respostas.push(...res.data)
+        }else{
+            comment.respostas = res.data
+        }
         comment.carregadoUmaVez = true
     }else{
         notificationStore.addNotification({
@@ -219,8 +227,8 @@ const handleNewComment = async (e: Event, post: Post) => {
         >Ver mais comentários...</button>
     </div>
 
-    <form @submit.prevent="handleNewComment($event, post)" class="flex gap-4 items-center mt-4">
-        <img src="@/assets/user_default_foto.jpeg" alt="Foto de perfil" class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-neutral-900 object-cover">
+    <form v-if="currentUserStore.currentUser" @submit.prevent="handleNewComment($event, post)" class="flex gap-4 items-center mt-4">
+        <img :src="currentUserStore.currentUser.link_perfil" alt="Foto de perfil" class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-neutral-900 object-cover">
         <input type="text" name="comment" class="bg-neutral-700 placeholder:text-neutral-500 text-white rounded-lg p-2 w-full" placeholder="Adicione um comentário.">
     </form>
 </template>

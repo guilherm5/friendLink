@@ -1,20 +1,12 @@
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import jwt_decode from 'jwt-decode'
 import type { Auth } from '@/types/AuthService'
 import type { Post } from '@/types/PostService'
 import type { AlertNotification, NotificationProps } from '@/types/Notification'
-
-
-export const useCounterStore = defineStore('counter', () => {
-  const count = ref(0)
-  const doubleCount = computed(() => count.value * 2)
-  function increment() {
-    count.value++
-  }
-
-  return { count, doubleCount, increment }
-})
+import { getUser } from '@/services/UserService'
+import type { DefaultResponse } from '@/types/ApiService'
+import type { UserResponse } from '@/types/UserService'
 
 export const useNotificationStore = defineStore('notification', () => {
   const notifications = ref<AlertNotification[]>([])
@@ -64,11 +56,39 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function removeAuth() {
+    const currentUserStore = useCurrentUserStore()
+    currentUserStore.clearCurrentUser()
     localStorage.removeItem('auth')
     setAuth(undefined, undefined)
   }
 
   return { auth, setAuth, removeAuth }
+})
+
+export const useCurrentUserStore = defineStore('currentUser', () => {
+  const currentUser = ref<UserResponse | undefined>(undefined)
+  function setCurrentUser(user: UserResponse) {
+    currentUser.value = user
+  }
+  function clearCurrentUser() {
+    currentUser.value = undefined
+  }
+  async function getCurrentUser() {
+    const authStore = useAuthStore()
+    const notificationStore = useNotificationStore()
+    const res = await getUser(authStore.auth?.token) as DefaultResponse
+    if (res.status && res.data) {
+      setCurrentUser(res.data as UserResponse)
+    }else{
+      notificationStore.addNotification({
+        type: 'error',
+        body: res.error?.response?.data as string ?? 'Ocorreu um erro inesperado ao carregar as suas informações.',
+      })
+
+      clearCurrentUser()
+    }
+  }
+  return { currentUser, setCurrentUser, clearCurrentUser, getCurrentUser }
 })
 
 export const usePostStore = defineStore('post', () => {

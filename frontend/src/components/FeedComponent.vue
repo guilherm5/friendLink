@@ -2,7 +2,7 @@
 import { Chat32Regular, Heart32Filled, Heart32Regular } from '@vicons/fluent';
 import { DotsVertical, Repeat } from '@vicons/tabler';
 import TooltipContainerComponent from './TooltipContainerComponent.vue';
-import { usePostStore, useAuthStore, useNotificationStore } from '../stores/global';
+import { usePostStore, useAuthStore, useNotificationStore, useCurrentUserStore } from '../stores/global';
 import SkeletonComponent from './SkeletonComponent.vue';
 import { getComments, likePost, unlikePost, deletePost } from '@/services/PostService';
 import type { Post, CommentResponse } from '@/types/PostService';
@@ -15,6 +15,7 @@ defineProps<{
 }>()
 
 const postStore = usePostStore()
+const currentUserStore = useCurrentUserStore()
 const authStore = useAuthStore()
 const notificationStore = useNotificationStore()
 const comentsLimit = ref(5)
@@ -75,11 +76,17 @@ const timeAgo = (date: string) => {
     const now = new Date()
     const postDate = new Date(date)
     const diff = now.getTime() - postDate.getTime()
+    const diffYears = Math.floor(diff / (1000 * 60 * 60 * 24 * 7 * 4 * 12))
+    const diffWeeks = Math.floor(diff / (1000 * 60 * 60 * 24 * 7))
     const diffDays = Math.floor(diff / (1000 * 60 * 60 * 24))
     const diffHours = Math.floor(diff / (1000 * 60 * 60))
     const diffMinutes = Math.floor(diff / (1000 * 60))
     const diffSeconds = Math.floor(diff / (1000))
-    if(diffDays > 0){
+    if(diffYears > 0){
+        return diffYears === 1 ? '1ano atrás' : diffYears + 'anos atrás'
+    }else if(diffWeeks > 0){
+        return diffWeeks === 1 ? '1s atrás' : diffWeeks + 's atrás'
+    }else if(diffDays > 0){
         return diffDays === 1 ? '1d atrás' : diffDays + 'd atrás'
     }else if(diffHours > 0){
         return diffHours === 1 ? '1h atrás' : diffHours + 'h atrás'
@@ -118,11 +125,11 @@ const handleDeletePost = async (post: Post) => {
                         <div class="flex items-center">
                             <p class="text-white font-sans font-medium inline-block">{{ post.nome }}</p>
                             <div class="mx-2 inline-block w-1 h-1 bg-yellow-400 rounded-full"></div>
-                            <p class="text-yellow-400 inline-block text-[12px] font-thin">2 dias atrás</p>
+                            <p class="text-yellow-400 inline-block text-[12px] font-thin">{{ timeAgo(post.dt_criacao) }}</p>
                         </div>
                     </router-link>
 
-                    <div class="relative ml-auto group">
+                    <div v-if="currentUserStore.currentUser?.id_usuario === post.id_user" class="relative ml-auto group">
                         <button class="text-neutral-300 md:text-neutral-400 hover:text-neutral-100  min-w-[50px] flex justify-end no-outline" :id="'options-button'+post.id_post" aria-expanded="true" aria-haspopup="true">
                             <DotsVertical class="h-4 md:h-5"/>
                         </button>
@@ -139,10 +146,11 @@ const handleDeletePost = async (post: Post) => {
                     <div v-if="post.post_texto" class="my-2">{{ post.post_texto.replace(/\n\s*\n/g, '\n\n') }}</div>
                 </div>
                 <!-- post image -->
-                <div v-if="post.post_imagem" class="rounded-lg overflow-hidden w-full max-w-[640px] max-h-[480px] mx-auto bg-neutral-900">
+                <div v-if="post.post_imagem" class="rounded-lg overflow-hidden w-full max-w-[640px] h-full max-h-[480px] mx-auto bg-neutral-900">
                     <img 
                         :src="post.post_imagem"
                         class="w-full h-full object-cover"
+                        loading="lazy"
                     />
                 </div>
                 <!-- post iteractions -->
@@ -182,4 +190,3 @@ const handleDeletePost = async (post: Post) => {
         </div>
     </div>
 </template>
-@/types/PostService

@@ -31,7 +31,9 @@ type Comment = CommentResponse & {
 }
 type PostResponse = {
     id_post: number, 
+    id_user: number,
     uuid_post: string,
+    dt_criacao: string,
     post_texto?: string, 
     post_imagem?: string,
     nome: string,
