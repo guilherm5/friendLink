@@ -1,5 +1,5 @@
 import type { RouteLocationNormalized } from "vue-router";
-import { useAuthStore } from '@/stores/global';
+import { useAuthStore, useCurrentUserStore } from '@/stores/global';
 
 type RouteLocationNormalizedExtended = RouteLocationNormalized & {
     meta?: {
@@ -20,6 +20,7 @@ const navigationGuard = async (to: RouteLocationNormalizedExtended) => {
 
 const checkAuth = async (to: RouteLocationNormalizedExtended) => {
     const authStore = useAuthStore()
+    const currentUserStore = useCurrentUserStore()
     const token = authStore.auth?.token
     const refreshToken = authStore.auth?.refreshToken
     const requireAuth = to.meta?.requireAuth
@@ -33,6 +34,10 @@ const checkAuth = async (to: RouteLocationNormalizedExtended) => {
         if(routeName && publicRoutes.includes(routeName as string)){
             return { name: 'home' }
         }else{
+            if(!currentUserStore.currentUser && token && refreshToken){
+                await currentUserStore.getCurrentUser()
+            }
+
             return true
         }
     }else{
