@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import ButtonComponent from './ButtonComponent.vue';
-import { Close, Image, TrashBin } from '@vicons/ionicons5';
-import { ref } from 'vue';
+import { Close, Image as ImageIonIcon } from '@vicons/ionicons5';
+import { onMounted, ref } from 'vue';
 import { imageUpload, type ImageUploadReturn } from '@/utils/imageUpload';
-import TooltipContainerComponent from '@/components/TooltipContainerComponent.vue';
+// import TooltipContainerComponent from '@/components/TooltipContainerComponent.vue';
+import * as fabric from 'fabric'
 // import { useNotificationStore, useAuthStore, usePostStore } from '../stores/global';
 // import { createPost } from '@/services/PostService';
 // import type { DefaultResponse } from '@/types/ApiService';
@@ -18,11 +19,96 @@ import TooltipContainerComponent from '@/components/TooltipContainerComponent.vu
 // const postStore = usePostStore()
 // const notificationStore = useNotificationStore()
 // const editableContent = ref<HTMLElement | null>(null)
-const imageToBeCropped = ref<string | null>(null)
-const croppedPreview = ref<string | null>(null)
+// canvas for stories like instagram
+var ImageInstance = null as fabric.Image | null
+var canvas = null as fabric.Canvas | null
+const downloadLink = ref<HTMLAnchorElement | null>(null)
+onMounted(() => {
+    canvas = new fabric.Canvas('imgCanvas', {
+        preserveObjectStacking: true,
+        controlsAboveOverlay: true,
+        backgroundColor: 'rgb(140,140,140)',
+        // clipTo: (ctx: CanvasRenderingContext2D) => {
+        //     ctx.rect(220, 80, 360, 640);
+        // },
+    })
+    fabric.Image.fromURL('https://www.acwe.co.uk/tutorials/story-maker-tutorial-part-1/img/overlay-bg.png').then((overlayImg: fabric.Image) => {
+        overlayImg.set({
+            opacity: 0.5,
+            angle: 0,
+            left: 0,
+            top: 0,
+            originX: 'left',
+            originY: 'top',
+            crossOrigin: 'anonymous',
+            selectable: false
+        })
+        canvas!.overlayImage = overlayImg
+        canvas?.renderAll()
+    })
+    addTextToCanvas('Story text goes here - Lorem Ipsum')
+})
+
+const addTextToCanvas = (text: string) => {
+    const textbox = new fabric.Textbox(text, {
+        left: 20,
+        top: 455,
+        width: 320,
+        fontSize: 24,
+        fill: '#fff',
+        fontFamily: 'sans-serif',
+        fontWeight: 500,
+        textAlign: 'center',      
+        borderColor: 'green',
+        cornerColor: 'green',
+        cornerSize: 12,
+        transparentCorners: false,
+        shadow: 'rgba(0,0,0,0.3) 2px 2px 10px',
+    });
+    canvas?.add(textbox);
+}
 const handleImageUpload = (data: ImageUploadReturn) => {
-    if(data.error){return}
-    imageToBeCropped.value = data.urlPreview
+    if(!data.error && data.urlPreview){   
+        if(ImageInstance){
+            canvas?.remove(ImageInstance)
+        }
+        const storyImageCover = new Image()
+        storyImageCover.src = data.urlPreview
+        storyImageCover.onload = () => {
+            if(!storyImageCover){return}
+            ImageInstance = new fabric.Image(storyImageCover, {
+                angle: 0,
+                left: 0,
+                top: 0,
+                selectable: true,      
+                borderColor: '#EAB308',
+                cornerColor: '#EAB308',
+                cornerSize: 10,
+                transparentCorners: true,
+            });
+            canvas?.add(ImageInstance);
+            canvas?.sendObjectToBack(ImageInstance)
+        }
+    }
+}
+const dataURLtoBlob = (dataUrl: string) => {
+    const arr = dataUrl.split(','), mime = arr[0].match(/:(.*?);/)?.[1]
+    const bstr = atob(arr[1])
+    let n = bstr.length
+    const u8arr = new Uint8Array(n)
+    while(n--){
+        u8arr[n] = bstr.charCodeAt(n)
+    }
+    return new Blob([u8arr], {type:mime})
+}
+const handleSave = () =>{
+    if(!canvas){return}
+    const imgData = canvas.toDataURL({format:'png', multiplier: 3});
+    const blob = dataURLtoBlob(imgData);
+    const objurl = URL.createObjectURL(blob)
+    downloadLink.value!.href = objurl
+    downloadLink.value!.download = 'story.png'
+    downloadLink.value!.click()
 }
 // const submit = async () => {
 //     formLoading.value = true
@@ -60,38 +146,28 @@ const handleImageUpload = (data: ImageUploadReturn) => {
 </script>
 
 <template>
-    <div class="post-container mx-auto">
-        <button class="block ml-auto p-2 pb-0 group" @click="$emit('setStage', 'button')">
-            <Close class="w-6 text-neutral-700 group-focus:text-yellow-400 group-hover:text-yellow-400"/>
-        </button>
+    <div class="fixed w-full h-full top-0 left-0 right-0 bg-neutral-900 z-50">
+        <div>
+            <button class="flex items-center text-white ml-auto p-2 pb-0 group" @click="$emit('setStage', 'button')">
+                <span class="text-neutral-700 group-focus:text-yellow-400 group-hover:text-yellow-400">Fechar</span> 
+                <Close class="w-6 text-neutral-700 group-focus:text-yellow-400 group-hover:text-yellow-400"/>
+            </button>
 
-        <div class="p-2">
-            <canvas width="360" height="640"></canvas>
-        </div>
-        
-        <div class="p-2">
-            <div v-if="croppedPreview" class="rounded-lg overflow-hidden w-full max-w-[640px] max-h-[480px] mx-auto mt-4 bg-neutral-900 relative">
-                <img 
-                    :src="croppedPreview"
-                    title="Imagem a ser publicada"
-                    class="w-full h-full object-cover"
-                />
-                <button @click="croppedPreview = null" class="absolute mt-2 mr-2 top-0 right-0 p-2 rounded-full bg-neutral-800 hover:bg-neutral-900 transition-all">
-                    <TrashBin class="w-6 text-red-500 group-focus:text-yellow-400 group-hover:text-yellow-400"/>
-                    <div class="relative">
-                        <TooltipContainerComponent text="Apagar imagem" width="fit" side="left"/>
-                    </div>
-                </button>
+            <div class="p-2">
+                <canvas id="imgCanvas" width="800" height="800"></canvas>
+                <a ref="downloadLink" class="hidden" href=""></a>
+            </div>
+            
+            <div class="p-2">
+                <div class="mt-2 flex justify-between">
+                    <label for="imageUpload" role="button" class="p-2 rounded-full bg-neutral-900 text-yellow-400 relative group">
+                        <ImageIonIcon width="24"/>
+                    </label>
+                    <ButtonComponent title="Pronto" @click="handleSave" />
+                </div>
             </div>
 
-            <div class="mt-2 flex justify-between">
-                <label for="imageUpload" role="button" class="p-2 rounded-full bg-neutral-900 text-yellow-400 relative group">
-                    <Image width="24"/>
-                </label>
-                <ButtonComponent title="OK" />
-            </div>
+            <input type="file" id="imageUpload"  class="hidden" accept="image/png, image/jpeg" @change="imageUpload($event, handleImageUpload)" />
         </div>
-
-        <input type="file" id="imageUpload"  class="hidden" accept="image/png, image/jpeg" @change="imageUpload($event, handleImageUpload)" />
     </div>
 </template>
