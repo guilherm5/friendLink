@@ -4,6 +4,7 @@ import { AccountTreeRound, AdsClickFilled } from '@vicons/material';
 import { Close } from '@vicons/ionicons5';
 import { onMounted, ref } from 'vue';
 import NewPostComponent from '@/components/NewPostComponent.vue';
+import NewStoryComponent from './NewStoryComponent.vue';
 
 type Stage = 'button' | 'selectPostOrStory' | 'post' | 'story' | 'advertising'
 const props = defineProps<{
@@ -17,6 +18,11 @@ onMounted(() => {
 
 const setStage = (newStage: Stage) => {
     currentStage.value = newStage
+    if(newStage === 'story'){
+        document.getElementsByTagName('body')[0].style.overflowY = 'hidden'
+    }else{
+        document.getElementsByTagName('body')[0].style.overflowY = 'auto'
+    }
 }
 </script>
 
@@ -69,6 +75,9 @@ const setStage = (newStage: Stage) => {
 
             <div v-if="currentStage === 'post'" class="transition-all bg-neutral-800 w-full max-w-3xl rounded-lg">
                 <NewPostComponent @setStage="setStage"/>
+            </div>
+            <div v-if="currentStage === 'story'" class="transition-all bg-neutral-800 w-full max-w-3xl rounded-lg">
+                <NewStoryComponent @setStage="setStage"/>
             </div>
         </div>
     </div>
