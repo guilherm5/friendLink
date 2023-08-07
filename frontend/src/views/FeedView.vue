@@ -81,7 +81,7 @@ async function fetchPosts(): Promise<false | Post[]>{
       </section>
       <section class="h-16 flex flex-col w-full max-w-[680px] items-center mx-auto" v-auto-animate>
         <StoryComponent />
-        <CreateNewContentComponent stage="story" />
+        <CreateNewContentComponent stage="button" />
         <FeedComponent :postsLoading="postsLoading" />
         <div @click="postStore.updatePosts()" :class="(endOfPosts ? 'opacity-70' : 'opacity-0 pointer-events-none') + ' text-neutral-500 font-medium pb-[70px] pt-4 md:pb-6 cursor-pointer'" id="loadMorePosts">🌠 você chegou ao fim do feed. Atualizar</div>
       </section>

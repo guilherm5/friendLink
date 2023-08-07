@@ -18,6 +18,11 @@ onMounted(() => {
 
 const setStage = (newStage: Stage) => {
     currentStage.value = newStage
+    if(newStage === 'story'){
+        document.getElementsByTagName('body')[0].style.overflowY = 'hidden'
+    }else{
+        document.getElementsByTagName('body')[0].style.overflowY = 'auto'
+    }
 }
 </script>
 
