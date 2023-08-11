@@ -47,6 +47,7 @@ type Post = PostResponse & {
     comentarios?: Comment[],
     loadingComentarios?: boolean,
     carregadoUmaVez?: boolean,
+    seguindo?: boolean,
 }
 export type {
     PostResponse,

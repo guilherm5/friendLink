@@ -8,16 +8,21 @@ import {
 import router from '@/router';
 import { computed } from 'vue';
 import TooltipContainerComponent from '@/components/TooltipContainerComponent.vue';
-import { usePostStore, useAuthStore, useCurrentUserStore } from '../stores/global';
+import { usePostStore, useAuthStore, useCurrentUserStore, useStoryStore } from '../stores/global';
 
 const siteUrl = window.location.href
 const currentRoute = computed(() => router.currentRoute.value.name as string)
 const postStore = usePostStore()
+const storyStore = useStoryStore()
 const authStore = useAuthStore()
 const currentUserStore = useCurrentUserStore()
 const handleLogout = () => {
   authStore.removeAuth()
   router.push({name: 'signin'})
+}
+const updateFeed = () => {
+  postStore.updatePosts()
+  storyStore.updateStories()
 }
 </script>
 
@@ -62,7 +67,7 @@ const handleLogout = () => {
 
     <ul class="flex w-full justify-between md:justify-center py-2 md:gap-12 mx-auto">
       <li class="relative">
-        <router-link @click="currentRoute === 'home' ? postStore.updatePosts() : false" :to="{name:'home'}" class="text-neutral-300 md:text-neutral-400 hover:text-neutral-100 group">
+        <router-link @click="currentRoute === 'home' ? updateFeed() : false" :to="{name:'home'}" class="text-neutral-300 md:text-neutral-400 hover:text-neutral-100 group">
           <Home32Filled v-if="(currentRoute === 'home')" class="text-yellow-400" height="28"/>
           <Home32Regular v-else height="28" class="hover:text-yellow-400"/>
           <TooltipContainerComponent text="Feed" width="fit"/>

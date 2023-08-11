@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import ButtonComponent from './ButtonComponent.vue';
 import { Close, Image, TrashBin } from '@vicons/ionicons5';
-import { reactive, ref } from 'vue';
+import { reactive, ref, watch } from 'vue';
 import { imageUpload, type ImageUploadReturn } from '@/utils/imageUpload';
 import ImageCropperComponent from '@/components/ImageCropperComponent.vue';
 import TooltipContainerComponent from '@/components/TooltipContainerComponent.vue';
@@ -59,6 +59,14 @@ const submit = async () => {
     }
     formLoading.value = false
 }
+    watch(imageToBeCropped, (value: string | null) => {
+        if(value){
+            document.body.style.overflow = 'hidden'
+        }else{
+            document.body.style.overflow = 'auto'
+        }
+    })
+
 </script>
 
 <template>

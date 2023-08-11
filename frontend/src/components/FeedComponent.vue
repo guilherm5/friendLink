@@ -9,6 +9,9 @@ import type { Post, CommentResponse } from '@/types/PostService';
 import type { DefaultResponse } from '@/types/ApiService';
 import { ref } from 'vue';
 import CommentComponent from './CommentComponent.vue';
+import { PersonAddAlt1Filled } from '@vicons/material';
+import { followUser, unfollowUser } from '@/services/UserService';
+import { timeAgo } from '@/utils/calculateTimeAgo';
 
 defineProps<{
     postsLoading: boolean,
@@ -44,6 +47,25 @@ const like = (post: Post) => {
         post.qtde_curtida++
     }
 }
+const follow = (post: Post) => {
+    if(post.seguindo){
+        unfollowUser(authStore.auth?.token, post.id_user)
+        post.seguindo = false
+        postStore.posts.forEach(postItem => {
+            if(postItem.id_user === post.id_user){
+                postItem.seguindo = false
+            }
+        })
+    }else{
+        followUser(authStore.auth?.token, post.id_user)
+        post.seguindo = true
+        postStore.posts.forEach(postItem => {
+            if(postItem.id_user === post.id_user){
+                postItem.seguindo = true
+            }
+        })
+    }
+}
 const listComments = async (post: Post, loadMore: boolean = false) => {
     if(!loadMore){
         if(post.carregadoUmaVez){
@@ -70,31 +92,6 @@ const listComments = async (post: Post, loadMore: boolean = false) => {
         })
     }
     post.loadingComentarios = false
-}
-
-const timeAgo = (date: string) => {
-    const now = new Date()
-    const postDate = new Date(date)
-    const diff = now.getTime() - postDate.getTime()
-    const diffYears = Math.floor(diff / (1000 * 60 * 60 * 24 * 7 * 4 * 12))
-    const diffWeeks = Math.floor(diff / (1000 * 60 * 60 * 24 * 7))
-    const diffDays = Math.floor(diff / (1000 * 60 * 60 * 24))
-    const diffHours = Math.floor(diff / (1000 * 60 * 60))
-    const diffMinutes = Math.floor(diff / (1000 * 60))
-    const diffSeconds = Math.floor(diff / (1000))
-    if(diffYears > 0){
-        return diffYears === 1 ? '1ano atrás' : diffYears + 'anos atrás'
-    }else if(diffWeeks > 0){
-        return diffWeeks === 1 ? '1s atrás' : diffWeeks + 's atrás'
-    }else if(diffDays > 0){
-        return diffDays === 1 ? '1d atrás' : diffDays + 'd atrás'
-    }else if(diffHours > 0){
-        return diffHours === 1 ? '1h atrás' : diffHours + 'h atrás'
-    }else if(diffMinutes > 0){
-        return diffMinutes === 1 ? '1m atrás' : diffMinutes + 'm atrás'
-    }else{
-        return Math.abs(diffSeconds) + 's atrás'
-    }
 }
 const handleDeletePost = async (post: Post) => {
     postStore.removePost(post.id_post)
@@ -140,6 +137,9 @@ const handleDeletePost = async (post: Post) => {
                             </div>
                         </div>
                     </div>
+                    <button v-else-if="!post.seguindo" @click="follow(post)" class="ml-auto bg-neutral-900 rounded text-yellow-500 px-2 py-1 flex items-center gap-2">
+                        <PersonAddAlt1Filled height="18"/>seguir
+                    </button>
                 </div>
                 <!-- post text -->
                 <div class="post-text text-white my-2 text-sm whitespace-pre-wrap">
