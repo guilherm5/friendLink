@@ -1,14 +1,23 @@
 
-type StoryResponse = {
+type StoryItem = {
     id_story: number, 
-    id_usuario: number,
-    link_perfil: string,
     link_story: string,
+    dt_criacao: string,
+    visualizou: boolean,
+}
+type StoryResponse = {
+    id_usuario: number,
     nome: string,
-    // arroba: string,
-    // visto: boolean,
-    // dt_criacao: string,
+    link_perfil: string,
+    arroba: string,
+    stories: string,
+}
+
+type Story = Omit<StoryResponse, 'stories'> & {
+    stories: StoryItem[],
 }
 export type {
-    StoryResponse
+    StoryResponse,
+    StoryItem,
+    Story
 }

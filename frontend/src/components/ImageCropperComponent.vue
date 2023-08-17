@@ -28,7 +28,7 @@ const cropImage = () => {
 }
 </script>
 <template>
-    <div :class="'overflow-scroll-y flex justify-center items-center fixed top-0 left-0 right-0 bottom-0 bg-neutral-900 z-50 h-screen transition-all ' + (imageUrl ? 'opacity-100' : 'opacity-0 pointer-events-none')">
+    <div :class="'flex overflow-y-scroll justify-center items-center fixed top-0 left-0 right-0 bottom-0 bg-neutral-900 z-50 h-screen transition-all ' + (imageUrl ? 'opacity-100' : 'opacity-0 pointer-events-none')">
         <div class="p-4 w-full md:max-w-3xl">
             <p class="text-neutral-300 text-center pt-4 pb-2">Utilizamos um aspecto de imagem <a href="https://www.adobe.com/br/express/discover/sizes/photo-aspect-ratio" target="_blank" class="underline">4:3</a>.</p>
             <div class="bg-black rounded-t-lg pt-4 px-4  max-h-[70vh] overflow-y-hidden">

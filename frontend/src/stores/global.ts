@@ -7,6 +7,7 @@ import type { AlertNotification, NotificationProps } from '@/types/Notification'
 import { getUser } from '@/services/UserService'
 import type { DefaultResponse } from '@/types/ApiService'
 import type { UserResponse } from '@/types/UserService'
+import type { Story } from '@/types/StoryService'
 
 export const useNotificationStore = defineStore('notification', () => {
   const notifications = ref<AlertNotification[]>([])
@@ -114,6 +115,22 @@ export const usePostStore = defineStore('post', () => {
     posts.value.splice(index, 1)
   }
   return { posts, addPosts, onUpdatePosts, updatePosts, setPosts, updatePostValue, removePost }
+})
+export const useStoryStore = defineStore('story', () => {
+  const stories = ref<Story[]>([])
+  const updateStoriesFunction = ref<Function | null>(null)
+  const updateStories = (): void => updateStoriesFunction.value ? updateStoriesFunction.value() : null
+
+  function onUpdateStories(updateFunction: Function) {
+    updateStoriesFunction.value = updateFunction
+  }
+  function addStories(newStories: Story[], start: boolean = false) {
+    start ?  stories.value.unshift(...newStories) : stories.value.push(...newStories)
+  }
+  function setStories(newStories: Story[]) {
+    stories.value = newStories
+  }
+  return { stories, addStories, setStories, updateStories, onUpdateStories }
 })
 
 export const useRedirectStore = defineStore('redirect', () => {

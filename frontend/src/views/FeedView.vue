@@ -5,16 +5,20 @@ import CreateNewContentComponent from '@/components/CreateNewContentComponent.vu
 import StoryComponent from '@/components/StoryComponent.vue';
 import { useNotificationStore } from '@/stores/global';
 import { getPosts } from '@/services/PostService';
+import { getStories } from '@/services/StoryService';
 import { useAuthStore } from '@/stores/global';
 import type { DefaultResponse } from '@/types/ApiService';
 import { ref, onMounted } from 'vue';
-import { usePostStore } from '../stores/global';
+import { usePostStore, useStoryStore } from '../stores/global';
 import type { Post } from '@/types/PostService';
+import type { StoryResponse, StoryItem, Story } from '@/types/StoryService';
 
 const notificationStore = useNotificationStore()
 const postsLoading = ref(false)
+const storiesLoading = ref(false)
 const authStore = useAuthStore()
 const postStore = usePostStore()
+const storyStore = useStoryStore()
 const postsPerPage = ref(10)
 const lastPostId = ref(0)
 const endOfPosts = ref(false)
@@ -26,6 +30,7 @@ const loadMorePosts = async (scrollSensor: HTMLElement | null) => {
 }
 onMounted(async () => {
   await fetchNewPosts()
+  await fetchStories()
   const scrollSensor = document.getElementById('loadMorePosts')
   window.addEventListener('scroll', () => loadMorePosts(scrollSensor))
 
@@ -37,6 +42,9 @@ onMounted(async () => {
     if(posts){
       postStore.setPosts(posts)
     }
+  })
+  storyStore.onUpdateStories(async () => {
+    await fetchStories()
   })
 })
 
@@ -70,6 +78,28 @@ async function fetchPosts(): Promise<false | Post[]>{
     return false
   }
 }
+async function fetchStories(){
+  storiesLoading.value = true
+  const res = await getStories(authStore.auth?.token) as DefaultResponse
+  if (res.status && res.data) {
+    const storiesResponse = res.data as StoryResponse[]
+    const stories = storiesResponse.map(story => {
+      return {...story, stories: JSON.parse(story.stories as string) as StoryItem[]} as Story
+    })
+    storyStore.setStories(stories)
+    storiesLoading.value = false
+  }else{
+    if(res.data === null){
+      storiesLoading.value = false
+      return
+    }
+    notificationStore.addNotification({
+      type: 'error',
+      body: res.error?.response?.data as string ?? 'Ocorreu um erro inesperado ao carregar os stories.',
+    })
+    storiesLoading.value = false
+  }
+}
 </script>
 
 <template>
@@ -80,7 +110,7 @@ async function fetchPosts(): Promise<false | Post[]>{
         
       </section>
       <section class="h-16 flex flex-col w-full max-w-[680px] items-center mx-auto" v-auto-animate>
-        <StoryComponent />
+        <StoryComponent :storiesLoading="storiesLoading" />
         <CreateNewContentComponent stage="button" />
         <FeedComponent :postsLoading="postsLoading" />
         <div @click="postStore.updatePosts()" :class="(endOfPosts ? 'opacity-70' : 'opacity-0 pointer-events-none') + ' text-neutral-500 font-medium pb-[70px] pt-4 md:pb-6 cursor-pointer'" id="loadMorePosts">🌠 você chegou ao fim do feed. Atualizar</div>
