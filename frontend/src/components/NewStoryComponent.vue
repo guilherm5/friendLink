@@ -178,8 +178,8 @@ const handleSave = async () =>{
 </script>
 
 <template>
-    <div class="fixed w-full h-screen top-0 left-0 right-0 bg-neutral-900 z-50">
-        <div class="h-full flex flex-col">
+    <div class="fixed w-full h-screen top-0 left-0 right-0 bg-neutral-900 z-50 overflow-y-scroll">
+        <div class="min-h-full flex flex-col">
             <div class="flex justify-center">
                 <div class="flex-1 flex justify-center max-w-md max-auto">
                     <button class="md:hidden text-yellow-400 mr-8" @click="handleSave">Salvar</button>
