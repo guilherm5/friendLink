@@ -26,7 +26,7 @@ func LoginUser(c *gin.Context) {
 	err := DB.QueryRow(`SELECT id_usuario, nome, senha FROM usuario WHERE email = ?`, credentials.Email).Scan(&login.IDUsuario, &login.Nome, &login.Senha)
 	if err != nil {
 		log.Println("Erro in scan database", err)
-		c.Status(500)
+		c.Status(400)
 		return
 	}
 
@@ -49,7 +49,59 @@ func LoginUser(c *gin.Context) {
 		c.Status(400)
 	}
 
+	claimsRefresh := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"Issuer": login.IDUsuario,
+		"Nome":   login.Nome,
+		"exp":    time.Now().Add(time.Hour * 8).Unix(),
+	})
+
+	tokenRefresh, err := claimsRefresh.SignedString([]byte(secret))
+	if err != nil {
+		log.Println("Error generating jwt token", err)
+		c.Status(400)
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"logged": tokenString,
+		"logged":  tokenString,
+		"refresh": tokenRefresh,
+	})
+}
+
+func Refresh(c *gin.Context) {
+	secret := os.Getenv("SECRET")
+	RefreshTokenString := c.GetHeader("Authorization")
+
+	refreshToken, err := jwt.Parse(RefreshTokenString, func(token *jwt.Token) (interface{}, error) {
+		return []byte(secret), nil
+	})
+	if err != nil {
+		log.Println("Refresh token invalido", err)
+		c.AbortWithStatus(401)
+		return
+	}
+	if !refreshToken.Valid {
+		c.AbortWithStatus(400)
+		return
+	}
+	claims := refreshToken.Claims.(jwt.MapClaims)
+
+	Nome := claims["Nome"].(string)
+	Issuer := int64(claims["Issuer"].(float64))
+
+	Token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"Nome":   Nome,
+		"Issuer": Issuer,
+		"exp":    time.Now().Add(time.Hour).Unix(),
+	})
+
+	TokenString, err := Token.SignedString([]byte(secret))
+	if err != nil {
+		c.Status(500)
+		log.Println("Erro ao gerar novo token JWT", err)
+		c.Abort()
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"new_token": TokenString,
 	})
 }

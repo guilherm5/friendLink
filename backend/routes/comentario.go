@@ -12,4 +12,6 @@ func Comentario(c *gin.Engine) {
 
 	api.POST("/comentario", controllers.NewComment)
 	api.POST("/list-comentario", controllers.GetComment)
+	api.POST("/resp-comentario", controllers.RespComment)
+	api.POST("/list-resp-comentario", controllers.ListRespComment)
 }

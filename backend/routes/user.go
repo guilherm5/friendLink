@@ -13,6 +13,7 @@ func LInfoUser(c *gin.Engine) {
 
 	api.PUT("/info-user", controllers.AfterCad) //Depois de criar o user, vamos rederecionar o user para esta pagina, onde vai pedir algumas infos
 	api.GET("/info-user", controllers.GetInfoUser)
+	api.GET("/feed-user", controllers.FeedUser)
 }
 
 func PostUser(c *gin.Engine) {

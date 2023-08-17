@@ -12,4 +12,7 @@ func Post(c *gin.Engine) {
 	//post Post(conteudo no feed)
 	api.POST("/post", controllers.Post)
 	api.POST("/list-post", controllers.Pagination)
+
+	//deletar post
+	api.DELETE("/delete-post", controllers.DeletePost)
 }

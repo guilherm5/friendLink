@@ -11,6 +11,11 @@ func Curtida(c *gin.Engine) {
 	api.Use(middleware.MiddlewareGO())
 
 	api.POST("/curtida", controllers.NewCurtida)
-	api.DELETE("/curtida", controllers.DelCurtida)
+	api.POST("/curte-comentario", controllers.CurteComment)
+	api.POST("/curte-resp-comentario", controllers.CurtRespComment)
 
+	//DELETE CURTIDAS
+	api.DELETE("/curtida", controllers.DelCurtida)
+	api.DELETE("/del-curtida-comentario", controllers.DelCurtidaComentario)
+	api.DELETE("/del-curtida-resp-comentario", controllers.DelCurtidaRespComentario)
 }

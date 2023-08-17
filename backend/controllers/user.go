@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"net/mail"
+	"strconv"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
@@ -42,21 +44,20 @@ func NewUser(c *gin.Context) {
 	//Fazendo hash do password
 	passwordUser, err := bcrypt.GenerateFromPassword([]byte(senha), 14)
 	if err != nil {
-		c.Status(400)
+		c.Status(500)
 		log.Println("Erro ao gerar hash da senha", err)
 		return
 	}
 
 	//Executando insert
-	_, err = DB.Exec(`INSERT INTO usuario (nome, email, senha) VALUES (?,?,?)`, nome, email, passwordUser)
+	_, err = DB.Exec(`INSERT INTO usuario (nome, email, senha, dt_criacao) VALUES (?,?,?,?)`, nome, email, passwordUser, time.Now())
 	if err != nil {
 		log.Println("Erro ao executar insert", err)
-		c.Status(400)
+		c.Status(500)
 		return
 	} else {
 		c.Status(201)
 	}
-
 }
 
 func AfterCad(c *gin.Context) {
@@ -95,6 +96,7 @@ func AfterCad(c *gin.Context) {
 			c.Status(400)
 			return
 		}
+
 		defer src.Close()
 
 		_, err = io.ReadAll(src)
@@ -105,6 +107,7 @@ func AfterCad(c *gin.Context) {
 		}
 		src.Seek(0, io.SeekStart)
 
+		//upload file no bucket s3
 		uploader := s3manager.NewUploader(service)
 		contentType := foto.Header.Get("Content-Type")
 		input := &s3manager.UploadInput{
@@ -146,6 +149,7 @@ func AfterCad(c *gin.Context) {
 		}
 		srcCapa.Seek(0, io.SeekStart)
 
+		//upload file no bucket s3
 		contentTypeCapa := foto.Header.Get("Content-Type")
 		inputCapa := &s3manager.UploadInput{
 			Bucket:             aws.String("frienlinkfotos"),
@@ -184,10 +188,60 @@ func GetInfoUser(c *gin.Context) {
 	IDUser := utils.GetUserJWT(c)
 	var getUser models.Usuario
 
-	query := DB.QueryRow(`SELECT nome, bio, arroba, link_perfil, link_capa FROM usuario WHERE id_usuario = ?`, IDUser)
-	if err := query.Scan(&getUser.Nome, &getUser.Bio, &getUser.Arroba, &getUser.LinkPerfil, &getUser.LinkCapa); err != nil {
+	query := DB.QueryRow(`SELECT id_usuario, nome, bio, arroba, link_perfil, link_capa, dt_criacao FROM usuario WHERE id_usuario = ?`, IDUser)
+	if err := query.Scan(&getUser.IDUsuario, &getUser.Nome, &getUser.Bio, &getUser.Arroba, &getUser.LinkPerfil, &getUser.LinkCapa, &getUser.DataCriacao); err != nil {
 		log.Println(err)
 	}
 
 	c.JSON(200, getUser)
+}
+
+// pegar informações para o feed do usuario
+func FeedUser(c *gin.Context) {
+	IDUser := utils.GetUserJWT(c)
+	var getUser models.FeedUser
+	var dataUser []models.FeedUser
+
+	IDPost, err := strconv.Atoi(c.PostForm("id_post"))
+	if err != nil {
+		log.Println("Errop ao converter id post", err)
+		c.Status(400)
+	}
+
+	limit := c.PostForm("limit")
+
+	query, err := DB.Query(`SELECT u.id_usuario, u.nome, u.arroba, u.link_perfil, u.link_capa, u.dt_criacao,
+	p.id_post, p.post_texto, p.post_imagem, 
+	COUNT(DISTINCT c.id_comentario) AS qtde_comentario, 
+	COUNT(DISTINCT cur.id_post_ct) AS qtde_curtida,
+	(SELECT CASE 
+			WHEN id_usuario_ct = ? THEN 1 
+			ELSE 0 
+			END
+		FROM curtida 
+			WHERE id_post_ct = p.id_post AND id_usuario_ct = ?) AS curtiu
+	FROM usuario u
+	INNER JOIN post p ON p.id_usuario_pt = u.id_usuario 
+	LEFT JOIN comentario c ON c.id_post_cmt = p.id_post 
+	LEFT JOIN curtida cur ON cur.id_post_ct = p.id_post 
+	WHERE u.id_usuario = ?
+	AND p.id_post < ?
+	GROUP BY p.id_post
+	ORDER BY p.id_post DESC
+	LIMIT ?`, IDUser, IDUser, IDUser, IDPost, limit)
+	if err != nil {
+		log.Println("Erro ao buscar posts do usuario", err)
+	}
+
+	for query.Next() {
+		err := query.Scan(&getUser.IDUsuario, &getUser.Nome, &getUser.Arroba, &getUser.LinkPerfil, &getUser.LinkCapa, &getUser.DataCriacao, &getUser.IDPost, &getUser.PostTexto, &getUser.PostImagem, &getUser.QtdeComentario, &getUser.QtdeCurtida, &getUser.Curtiu)
+		if err != nil {
+			log.Println("Erro ao scanear linhas", err)
+			c.Status(400)
+			return
+		}
+		dataUser = append(dataUser, getUser)
+	}
+
+	c.JSON(200, dataUser)
 }

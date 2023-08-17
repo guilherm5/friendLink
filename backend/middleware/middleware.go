@@ -41,9 +41,8 @@ func MiddlewareGO() gin.HandlerFunc {
 		//capturando claims para setar id usuario em um context e resgatar em outros lugares
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
-			c.Status(400)
 			log.Println("Erro ao obter claims", err)
-			return
+			c.AbortWithStatus(401)
 		}
 
 		sub, ok := claims["Issuer"].(float64)

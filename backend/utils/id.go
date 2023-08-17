@@ -15,14 +15,14 @@ func GetUserJWT(c *gin.Context) (IDUser int) {
 	if os.Getenv("env") != "production" {
 		err := godotenv.Load("./.env")
 		if err != nil {
-			log.Println("Erro ao carregar variavel de ambiente para uso do middleware", err)
+			log.Println("Erro ao carregar variavel de ambiente para obter id do usuario", err)
 			c.Status(400)
 			c.Abort()
 		}
 	}
 	secret := os.Getenv("SECRET")
 	if secret == "" {
-		log.Println("Secret middleware não pode ser null")
+		log.Println("Secret id user não pode ser null")
 		c.Abort()
 	}
 
@@ -52,6 +52,5 @@ func GetUserJWT(c *gin.Context) (IDUser int) {
 		c.Abort()
 	}
 	IDUser = int(sub)
-	c.Set("id", IDUser)
 	return IDUser
 }
