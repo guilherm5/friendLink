@@ -23,7 +23,7 @@ func Init() *sql.DB {
 		log.Println("Variaveis de ambiente do banco de dados nao pode ser null")
 	}
 
-	connection := fmt.Sprintf(`%s:%s@tcp(%s)/%s`, user, password, host, database)
+	connection := fmt.Sprintf(`%s:%s@tcp(%s)/%s?parseTime=true`, user, password, host, database)
 
 	db, err := sql.Open("mysql", connection)
 	if err != nil {

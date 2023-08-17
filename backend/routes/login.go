@@ -7,5 +7,6 @@ import (
 
 func Login(c *gin.Engine) {
 	api := c.Group("api")
-	api.POST("login", controllers.LoginUser)
+	api.POST("/login", controllers.LoginUser)
+	api.POST("/refresh", controllers.Refresh)
 }
