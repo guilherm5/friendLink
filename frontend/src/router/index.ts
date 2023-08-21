@@ -51,7 +51,8 @@ const router = createRouter({
     {
       path: '/perfil/:arroba',
       name: 'profile',
-      component: () => null
+      component: () => import('../views/ProfileView.vue'),
+      meta: { requireAuth: true }
     },
   ]
 })
